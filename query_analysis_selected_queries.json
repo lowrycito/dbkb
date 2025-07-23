@@ -1,0 +1,1648 @@
+{
+  "metadata": {
+    "analysis_date": "2025-05-23T19:36:29.661644",
+    "source_file": "/Volumes/Code/dbkb/query_catalog_deduplicated.json",
+    "total_queries_analyzed": 6086,
+    "selected_count": 75,
+    "selection_criteria": "Representative queries based on table usage, complexity, and business value"
+  },
+  "selected_queries": [
+    {
+      "rank": 1,
+      "score": 172,
+      "complexity": 34,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "reporting",
+        "inventory_management"
+      ],
+      "query_hash": "94f996ef39c9fa0fcae904090263a570",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_stockbalance",
+        "db_stockbalancecomp",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color",
+        "db_box",
+        "db_boxitem"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       e.Box AS NumeroDeCaja,\n       o.Wo AS Orden,\n       oi.item,\n       pr.Description AS Product,\n       f.Qty,\n       oi.SubTotal AS \"Unit Price\",\n       Sum(((stc.StandardCost*(oiv.Required/stc.ReliefFactor))/oi.Qty)) AS \"Unit Cost\",\n       oi.SubTotal*f.Qty AS \"Line Price\",\n       sum(((stc.StandardCost*(oiv.Required/stc.ReliefFactor))/oi.Qty)*f.Qty) AS \"Line Cost\"\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_stockbalance stcb ON stc.Stock = stcb.Stock\nAND stcb.Warehouse=?\nJOIN db_stockbalancecomp stcbc ON stcb.Balno = stcbc.Balno\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nJOIN db_box e ON oi.Wo=e.Wo\nJOIN db_boxitem f ON e.Box=f.Box\nAND oi.Item=f.I\nWHERE (oiv.Required>?)\n  AND (o.Wo=?)\nGROUP BY e.Box,\n         oi.Wo,\n         oi.Item\nORDER BY e.Box,\n         oi.Wo ASC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 2,
+      "score": 168,
+      "complexity": 30,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "reporting",
+        "inventory_management"
+      ],
+      "query_hash": "44f0a5b73e474643e5ca1f14b196fcd0",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_stockbalance",
+        "db_stockbalancecomp",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Wo AS Orden,\n       oi.item,\n       pr.Description AS Product,\n       oi.Qty,\n       oi.SubTotal AS \"Unit Price\",\n       Sum(((stc.StandardCost*(oiv.Required/stc.ReliefFactor))/oi.Qty)) AS \"Unit Cost\",\n       oi.SubTotal*oi.Qty AS \"Line Price\",\n       sum(((stc.StandardCost*(oiv.Required/stc.ReliefFactor)))) AS \"Line Cost\"\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_stockbalance stcb ON stc.Stock = stcb.Stock\nAND stcb.Warehouse=?\nJOIN db_stockbalancecomp stcbc ON stcb.Balno = stcbc.Balno\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (o.Wo=?)\nGROUP BY oi.Wo,\n         oi.Item\nORDER BY oi.Wo ASC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 3,
+      "score": 168,
+      "complexity": 30,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "reporting",
+        "inventory_management"
+      ],
+      "query_hash": "c327551290411509198befae5a2d1964",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_stockbalance",
+        "db_stockbalancecomp",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Wo AS Orden,\n       oi.item,\n       pr.Description AS Product,\n       oi.Qty,\n       oi.SubTotal AS \"Unit Price\",\n       Sum(((stc.StandardCost*(oiv.Required/stc.ReliefFactor))/oi.Qty)) AS \"Unit Cost\",\n       oi.SubTotal*oi.Qty AS \"Line Price\",\n       sum(((stc.StandardCost*(oiv.Required/stc.ReliefFactor)))) AS \"Line Cost\"\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_stockbalance stcb ON stc.Stock = stcb.Stock\nAND stcb.Warehouse=?\nJOIN db_stockbalancecomp stcbc ON stcb.Balno = stcbc.Balno\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND oi.Wo IN(?)\nGROUP BY oi.Wo,\n         oi.Item\nORDER BY oi.Wo ASC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 4,
+      "score": 167,
+      "complexity": 30,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "b4467c6e3179ddb6a76d14cc68bc42aa",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color",
+        "db_orderiteminv",
+        "db_stock",
+        "db_box",
+        "db_boxitem",
+        "db_boxship"
+      ],
+      "embedding_ready_query": "SELECT concat(date_format(IF(?=?\n                             OR ? = ?, ?, ?), ?), ?, IF(?=?\n                                                                                                                                     OR ? = ?, ?, ?), ?, date_format(IF(?=?\n                                                                                                                                                                                                                                OR ? = ?, ?, ?), ?), ?, IF(?=?\n                                                                                                                                                                                                                                                                                                                                      OR ? = ?, ?, ?))AS Busqueda,\n       g.ShipDate,\n       cus.Name,\n       concat(o.Wo, ?, oi.Item)AS escaneo,\n       o.Wo,\n       oi.Item,\n       oi.Qty,\n       CAST(get_prompt_code(oi.PromptAnswers, ?, ?) AS DECIMAL(?, ?)) AS WD,\n       CAST(get_prompt_code(oi.PromptAnswers, ?, ?) AS DECIMAL(?, ?)) AS LN,\n       (IF(oi.Product IN (\"?\", \"?\", \"?\") ,\"Si\", \"\")) AS NoTools,\n       oiv.Stock,\n       stk.Description\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nJOIN db_orderiteminv oiv ON (oi.Wo = oiv.Wo\n                             AND oi.Item = oiv.Item)\nJOIN db_stock stk ON oiv.Stock=stk.Stock\nJOIN db_box e ON oi.Wo=e.Wo\nJOIN db_boxitem f ON e.Box=f.Box\nAND oi.Item=f.I\nJOIN db_boxship g ON e.Box=g.Box\nWHERE g.TimeCreated BETWEEN date_add(TIMESTAMP(IF(?=?\n                                                  OR ? = ?, ?, ?), IF(?=?\n                                                                                                                                        OR ? = ?, ?, ?)) ,interval ? HOUR) AND date_add(TIMESTAMP(IF(?=?\n                                                                                                                                                                                                                                                         OR ? = ?, ?, ?), IF(?=?\n                                                                                                                                                                                                                                                                                                                                             OR ? = ?, ?, ?)) ,interval ? HOUR)\n  AND oiv.Required>?\n  AND if(?=\"\", TRUE, o.Customer=?)\n  AND mid(oiv.Stock, ?, ?)=\"?\"\nORDER BY o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 5,
+      "score": 163,
+      "complexity": 27,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "9b4de28bebf1719c4d3f3e0c6c6cac26",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_ordernotes",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Date AS OrderDate,\n       o.Status,\n       o.Wo AS Orden,\n       oi.item,\n       oi.Qty,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS Width,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS LENGTH,\n       oiv.Stock,\n       stc.PurchaseUnit AS PurchaseUnit,\n       oiv.Required,\n       oiv.Warehouse,\n       stc.ReliefUnit AS ReliefUnit,\n       stc.ReliefFactor AS ReliefFactor,\n       b.Product,\n       pr.Description,\n       c.Description AS Categoria,\n       ordn.Date,\n       ordn.Comment\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_ordernotes ordn ON o.Wo = ordn.Wo\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (b.Category BETWEEN ? AND ?)\n  AND ((oi.Qty-oi.QtyShipped-oi.QtyCancelled)>?)\n  AND (oiv.Stock=?)\n  AND (o.Status IN (?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?))\n  AND if(?=\"\", TRUE, oi.ItemBatch=?)\n  AND ordn.Date>= \"?-?-?\"\n  AND ordn.Comment like \"%UN-BATCHED%\"\nORDER BY oi.ItemBatch,\n         o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 6,
+      "score": 163,
+      "complexity": 26,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "cd51aa05ffa5ea881b0c39dc3c268e5b",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_stockbalance",
+        "db_stockbalancecomp",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Wo AS Orden,\n       oi.item,\n       Mid(pr.Description, ?, ?) AS Product,\n       oi.Qty,\n       oiv.Stock,\n       stc.Description,\n       oiv.Required,\n       stc.ReliefUnit AS ReliefUnit,\n       (stcbc.SohFloor)+(stcbc.SohShelf*stc.ReliefFactor)-(stcbc.CommitFloor) AS Available,\n       stcbc.SohFloor AS FloorOnHand,\n       (stcbc.SohShelf*stc.ReliefFactor) AS ShelfOnHand,\n       stcbc.SohFloor+(stcbc.SohShelf*stc.ReliefFactor) AS TotalOnHand,\n       stcbc.CommitFloor AS Commited\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_stockbalance stcb ON stc.Stock = stcb.Stock\nAND stcb.Warehouse=?\nJOIN db_stockbalancecomp stcbc ON stcb.Balno = stcbc.Balno\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (b.Category BETWEEN ? AND ?)\n  AND (o.Wo IN (?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?,\n                ?))\nORDER BY o.DateRequired ASC,\n         o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 7,
+      "score": 163,
+      "complexity": 22,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "feeb2fa8bc6b7282454e09bd037e7d07",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Wo AS Orden,\n       oi.item,\n       oi.Qty,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS Width,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS LENGTH,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS MOUNT,\n       oiv.Stock,\n       stc.Description AS StockName,\n       oiv.Required,\n       stc.ReliefUnit AS ReliefUnit,\n       stc.PurchaseUnit AS PurchaseUnit,\n       stc.ReliefFactor AS ReliefFactor,\n       b.Product,\n       pr.Description,\n       c.Description AS Categoria\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (b.Category BETWEEN ? AND ?)\n  AND (o.Wo=?)\nORDER BY o.DateRequired ASC,\n         o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 8,
+      "score": 163,
+      "complexity": 24,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "2ead8bc4eb65c5aaac4f4ed79842b93b",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Date AS OrderDate,\n       o.Status,\n       o.Wo AS Orden,\n       oi.item,\n       oi.Qty,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS Width,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS LENGTH,\n       oiv.Stock,\n       stc.PurchaseUnit AS PurchaseUnit,\n       oiv.Required,\n       oiv.Warehouse,\n       stc.ReliefUnit AS ReliefUnit,\n       stc.ReliefFactor AS ReliefFactor,\n       b.Product,\n       pr.Description,\n       c.Description AS Categoria,\n       o.Customer,\n       cus.Name AS \"Customer Name\",\n       o.ShZip\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (oiv.Stock=?)\n  AND (o.Date BETWEEN DATE_FORMAT(?, ?) AND DATE_FORMAT(?, ?))\nORDER BY oi.ItemBatch,\n         o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 9,
+      "score": 163,
+      "complexity": 26,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "1010ab805082cd97e2ace906fb53906f",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_stockbalance",
+        "db_stockbalancecomp",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Wo AS Orden,\n       oi.item,\n       Mid(pr.Description, ?, ?) AS Product,\n       oi.Qty,\n       oiv.Stock,\n       stc.Description,\n       oiv.Required,\n       stc.ReliefUnit AS ReliefUnit,\n       (stcbc.SohFloor)+(stcbc.SohShelf*stc.ReliefFactor)-(stcbc.CommitFloor) AS Available,\n       stcbc.SohFloor AS FloorOnHand,\n       (stcbc.SohShelf*stc.ReliefFactor) AS ShelfOnHand,\n       stcbc.SohFloor+(stcbc.SohShelf*stc.ReliefFactor) AS TotalOnHand,\n       stcbc.CommitFloor AS Commited,\n       If(((stcbc.SohFloor)+(stcbc.SohShelf*stc.ReliefFactor)-(stcbc.CommitFloor))<?, \"Short\", \"\") AS COMMENT\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_stockbalance stcb ON stc.Stock = stcb.Stock\nAND stcb.Warehouse=?\nJOIN db_stockbalancecomp stcbc ON stcb.Balno = stcbc.Balno\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (b.Category BETWEEN ? AND ?)\n  AND (o.Wo=?)\nORDER BY o.DateRequired ASC,\n         o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 10,
+      "score": 163,
+      "complexity": 23,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "d83708d1d4af3f17079fd3f24c1370a7",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Date AS OrderDate,\n       o.Status,\n       st.Description AS StatusDesc,\n       o.Wo AS Orden,\n       oi.item,\n       oi.Qty,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS Width,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS LENGTH,\n       oiv.Stock,\n       stc.PurchaseUnit AS PurchaseUnit,\n       oiv.Required,\n       oiv.Warehouse,\n       stc.ReliefUnit AS ReliefUnit,\n       stc.ReliefFactor AS ReliefFactor,\n       oiv.Required/stc.ReliefFactor AS RequiredPU,\n       b.Product,\n       pr.Description,\n       c.Description AS Categoria,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS Origen\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (b.Category BETWEEN ? AND ?)\n  AND ((oi.Qty-oi.QtyShipped-oi.QtyCancelled)>?)\n  AND (o.Status IN (?,\n                    ?,\n                    ?,\n                    ?))\nORDER BY oi.ItemBatch,\n         o.Wo DESC,\n         oi.Item ASC\nLIMIT ?",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 11,
+      "score": 163,
+      "complexity": 23,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "be6068316c41f7c691f86db2d08733de",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Status,\n       o.Wo AS Orden,\n       oi.item,\n       oi.Qty,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS Width,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS LENGTH,\n       oiv.Stock,\n       stc.PurchaseUnit AS PurchaseUnit,\n       oiv.Required,\n       stc.ReliefUnit AS ReliefUnit,\n       stc.ReliefFactor AS ReliefFactor,\n       b.Product,\n       pr.Description,\n       c.Description AS Categoria,\n       cus.Name,\n       o.Date\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (b.Category BETWEEN ? AND ?)\n  AND (oiv.Stock=?)\n  AND (o.Status>=?)\nORDER BY oi.ItemBatch,\n         o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 12,
+      "score": 163,
+      "complexity": 26,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "1d1356625f8aaab8d750b232bb0ed59d",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_stockbalance",
+        "db_stockbalancecomp",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Wo AS Orden,\n       oi.item,\n       pr.Description AS Product,\n       oi.Qty,\n       oiv.Stock,\n       stc.Description,\n       oi.SubTotal AS \"Unit Price\",\n       oiv.Required/oi.Qty AS \"Required\",\n       stc.StandardCost AS \"Standard Cost\",\n       ((stc.StandardCost*(oiv.Required/stc.ReliefFactor))/oi.Qty) AS \"Unit Cost\",\n       stc.PurchaseUnit AS \"Purchase Unit\",\n       stc.ReliefUnit AS \"Relief Unit\",\n       stc.ReliefFactor AS \"Relief Factor\",\n       oi.SubTotal*oi.Qty AS \"Line Price\",\n       oiv.Required AS \"Line Required\",\n       stc.StandardCost AS \"Std Cost\",\n       ((stc.StandardCost*(oiv.Required/stc.ReliefFactor))) AS \"Line Cost\"\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_stockbalance stcb ON stc.Stock = stcb.Stock\nAND stcb.Warehouse=?\nJOIN db_stockbalancecomp stcbc ON stcb.Balno = stcbc.Balno\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (o.Wo=?)\nORDER BY oi.Wo ASC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 13,
+      "score": 163,
+      "complexity": 23,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "inventory_management"
+      ],
+      "query_hash": "d15b92e3b0dc766e3ea015ef3780b341",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_orderiteminv",
+        "db_stock",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT oi.ItemBatch AS Batch,\n       o.Date AS OrderDate,\n       o.Status,\n       st.Description AS StatusDesc,\n       o.Wo AS Orden,\n       oi.item,\n       oi.Qty,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS Width,\n       get_prompt_code(oi.PromptAnswers, ?, ?) AS LENGTH,\n       oiv.Stock,\n       stc.PurchaseUnit AS PurchaseUnit,\n       oiv.Required,\n       oiv.Warehouse,\n       stc.ReliefUnit AS ReliefUnit,\n       stc.ReliefFactor AS ReliefFactor,\n       oiv.Required/stc.ReliefFactor AS RequiredPU,\n       b.Product,\n       pr.Description,\n       c.Description AS Categoria,\n       cus.Name AS Customer\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock stc ON oiv.Stock = stc.Stock\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nWHERE (oiv.Required>?)\n  AND (b.Category BETWEEN ? AND ?)\n  AND ((oi.Qty-oi.QtyShipped-oi.QtyCancelled)>?)\n  AND (oiv.Stock=?)\n  AND (o.Status IN (?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?,\n                    ?))\n  AND if(?=\"\", TRUE, oi.ItemBatch=?)\nORDER BY oi.ItemBatch,\n         o.Wo DESC,\n         oi.Item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 14,
+      "score": 157,
+      "complexity": 35,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "reporting",
+        "inventory_management"
+      ],
+      "query_hash": "aa2a428456d313d812e1659be57693d9",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_product",
+        "db_orderiteminv",
+        "db_stock",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_bom",
+        "db_color",
+        "db_box",
+        "db_boxitem",
+        "db_boxship"
+      ],
+      "embedding_ready_query": "SELECT \"Trafic\" AS Trafic,\n       SUM(IF(oi.Product=?,(get_prompt_code(oi.PromptAnswers, ?, ?)*?),f.Qty)) AS Qty,\n       count(distinct(e.Box)) AS Cajas,\n       \"Trafico\" AS Trafico,\n       s.Stock AS Tela_Color,\n       s.Description,\n       sum(oiv.Required) AS Required,\n       CONCAT(date(?), ?, ?, ?, date(?), ?, ?) AS ConsultaFechaEnvio\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo=oi.Wo\nJOIN db_product pr ON oi.Product = pr.Product\nLEFT JOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nJOIN db_stock s ON oiv.Stock=s.Stock\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nJOIN db_box e ON oi.Wo=e.Wo\nJOIN db_boxitem f ON e.Box=f.Box\nAND oi.Item=f.I\nJOIN db_boxship g ON e.Box=g.Box\nWHERE (g.ShipDate BETWEEN ? AND ?)\n  AND (b.Category IN(?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?))\n  AND (g.TimeCreated BETWEEN date_add(TIMESTAMP(?, ?) ,interval ? HOUR) AND date_add(TIMESTAMP(?, ?) ,interval ? HOUR))\n  AND (oiv.Required > ?)\nGROUP BY Trafic,\n         Trafico,\n         Tela_Color",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 15,
+      "score": 156,
+      "complexity": 30,
+      "categories": [
+        "order_management",
+        "customer_management",
+        "reporting"
+      ],
+      "query_hash": "f73b7e5c6e618c8170c0f6dc0101baba",
+      "main_table": "db_order",
+      "all_tables": [
+        "db_order",
+        "db_orderitem",
+        "db_product",
+        "db_customer",
+        "db_mfgitem",
+        "db_mfg",
+        "db_status",
+        "db_bom",
+        "db_color",
+        "db_orderiteminv",
+        "db_box",
+        "db_boxitem",
+        "db_boxship"
+      ],
+      "embedding_ready_query": "SELECT concat(date_format(IF(?=?\n                             OR ? = ?, ?, ?), ?), ?, IF(?=?\n                                                                                                                                     OR ? = ?, ?, ?), ?, date_format(IF(?=?\n                                                                                                                                                                                                                                OR ? = ?, ?, ?), ?), ?, IF(?=?\n                                                                                                                                                                                                                                                                                                                                      OR ? = ?, ?, ?))AS Busqueda,\n       g.ShipDate AS \"Fecha Envio\",\n       o.Wo AS \"Num Orden\",\n       cus.Name AS \"Customer Name\",\n       IF(LOCATE(?, o.Po)>?, CONCAT(?), ?) AS \"Remake Order\",\n       oi.item AS \"Linea\",\n       oi.Qty AS \"Cantidad\",\n       b.Category AS \"Categoria\",\n       c.Description AS \"Categoria Desc\",\n       pr.Description AS \"Product\",\n       oiv.Stock AS \"Stock Number\",\n       color.Description AS ccColorDescription,\n       IFNULL(get_prompt_code(oi.PromptAnswers, ?, ?), ?) AS Ancho,\n       IFNULL(get_prompt_code(oi.PromptAnswers, ?, ?), ?) AS Largo\nFROM db_order o\nJOIN db_orderitem oi ON o.Wo = oi.Wo\nJOIN db_product pr ON oi.Product = pr.Product\nJOIN db_customer cus ON o.Customer=cus.Customer\nJOIN db_mfgitem b ON oi.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category\nJOIN db_status st ON (o.Status=st.Status\n                      AND st.Type=?)\nJOIN db_bom bom ON (oi.Product=bom.Product\n                    AND oi.Model=bom.Model)\nJOIN db_color color ON (oi.Color=color.Color\n                        AND bom.ColorTable=color.ColorTable)\nJOIN db_orderiteminv oiv ON oi.Wo = oiv.Wo\nAND oi.Item = oiv.Item\nAND mid(oiv.Stock, ?, ?)=\"?\"\nAND oiv.Required>?\nJOIN db_box e ON oi.Wo=e.Wo\nJOIN db_boxitem f ON e.Box=f.Box\nAND oi.Item=f.I\nJOIN db_boxship g ON e.Box=g.Box\nWHERE (b.Category IN (?,\n                      ?,\n                      ?))\n  AND if(?=\"\", TRUE, o.Customer=?)\n  AND g.TimeCreated BETWEEN date_add(TIMESTAMP(IF(?=?\n                                                  OR ? = ?, ?, ?), IF(?=?\n                                                                                                                                        OR ? = ?, ?, ?)) ,interval ? HOUR) AND date_add(TIMESTAMP(IF(?=?\n                                                                                                                                                                                                                                                         OR ? = ?, ?, ?), IF(?=?\n                                                                                                                                                                                                                                                                                                                                             OR ? = ?, ?, ?)) ,interval ? HOUR)\nGROUP BY o.Wo,\n         oi.item\nORDER BY g.ShipDate,\n         o.Wo DESC,\n         oi.item ASC",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 16,
+      "score": 86,
+      "complexity": 23,
+      "categories": [
+        "reporting",
+        "financial",
+        "sales_reporting"
+      ],
+      "query_hash": "7ef75ed23d3308ace1b89e3ec09d0b80",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product",
+        "db_productgroup",
+        "db_salesperson"
+      ],
+      "embedding_ready_query": "SELECT a.Salesperson,\n       CONCAT(e.FirstName, \" \", e.Name) AS Name,\n       c.CapacityGroup,\n       d.Description AS ProductGroup,\n       b.Product,\n       c.Description AS ProductDescription,\n       SUM(b.SubTotal * b.Quantity) AS SalesTotal\nFROM db_invoice a\nINNER JOIN db_invoiceitem b ON a.Invoice=b.Invoice\nINNER JOIN db_product c ON b.Product=c.Product\nLEFT JOIN db_productgroup d ON c.CapacityGroup=d.GGroup\nLEFT JOIN db_salesperson e ON a.Salesperson=e.Salesperson\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Salesperson BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\n  AND (a.Total >?\n       OR b.Product BETWEEN ? AND ?)\n  AND c.CapacityGroup BETWEEN ? AND ?\nGROUP BY a.Salesperson,\n         c.CapacityGroup,\n         b.Product\nORDER BY a.Salesperson,\n         c.CapacityGroup,\n         b.Product",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 17,
+      "score": 81,
+      "complexity": 9,
+      "categories": [
+        "inventory_management"
+      ],
+      "query_hash": "f10d8581c3443af6fbe155b27e302d3e",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product",
+        "db_bom",
+        "db_model",
+        "db_color",
+        "db_stock"
+      ],
+      "embedding_ready_query": "SELECT pr.Product,\n       pr.Description AS Producto,\n       md.Model,\n       md.Description AS Modelo,\n       bom.ColorTable,\n       cl.Color,\n       cl.Description ColorName,\n       st.Stock,\n       st.Description\nFROM db_product pr\nJOIN db_bom bom ON pr.Product = bom.Product\nJOIN db_model md ON bom.Model = md.Model\nJOIN db_color cl ON bom.ColorTable = cl.ColorTable\nJOIN db_stock st ON (st.Component=\"ROLLERFABRIC\")\nAND cl.Color=st.Color\nWHERE pr.Product IN (?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?,\n                     ?)",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 18,
+      "score": 69,
+      "complexity": 19,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "69edec124614b63d6e595446ef7bd01f",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product",
+        "db_productgroup"
+      ],
+      "embedding_ready_query": "SELECT a.Site,\n       c.CapacityGroup,\n       j.Description AS GroupDescription,\n       b.Product,\n       c.Description AS ProductDescription,\n       COUNT(DISTINCT a.Invoice) AS InvoiceCount,\n       SUM(b.SubTotal * b.Quantity) AS SalesTotal\nFROM db_invoice a\nINNER JOIN db_invoiceitem b ON a.Invoice=b.Invoice\nINNER JOIN db_product c ON b.Product=c.Product\nLEFT JOIN db_productgroup j ON c.CapacityGroup=j.GGroup\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\n  AND a.Total >?\n  AND c.CapacityGroup BETWEEN ? AND ?\n  AND a.Site=?\nGROUP BY c.CapacityGroup,\n         GroupDescription,\n         b.Product,\n         ProductDescription\nORDER BY c.CapacityGroup,\n         GroupDescription,\n         b.Product,\n         ProductDescription",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 19,
+      "score": 69,
+      "complexity": 9,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "63e54ae8e23b0b32d202ef291ec729ca",
+      "main_table": "db_printroutelabel",
+      "all_tables": [
+        "db_printroutelabel",
+        "db_bom",
+        "db_product",
+        "db_mfgitem",
+        "db_mfg"
+      ],
+      "embedding_ready_query": "SELECT c.Category,\n       pr.Description,\n       bm.DiscontinuedDate,\n       prl.*\nFROM db_printroutelabel prl\nJOIN db_bom bm ON prl.Product=bm.Product\nAND prl.Model=bm.Model\nJOIN db_product pr ON prl.Product = pr.Product\nJOIN db_mfgitem b ON prl.Product = b.Product\nJOIN db_mfg c ON b.Category = c.Category",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 20,
+      "score": 66,
+      "complexity": 10,
+      "categories": [
+        "reporting",
+        "financial",
+        "sales_reporting"
+      ],
+      "query_hash": "18ef19936ce58b42e061790b3c904925",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_customersalesperson",
+        "db_invoiceitem",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT i.Invoice,\n       i.Status,\n       i.Date,\n       i.GlPeriod,\n       i.Customer AS ?, i.Total,\n                                d.Salesperson AS ?\nFROM db_invoice i\nJOIN db_customersalesperson d ON i.Customer=d.Customer\nAND d.I=?\nJOIN db_invoiceitem ii ON i.Invoice=ii.Invoice\nJOIN db_product p ON ii.Product=p.Product\nWHERE i.GlPeriod BETWEEN ? AND ?\nGROUP BY i.Invoice",
+      "databases": [
+        "epic17539"
+      ]
+    },
+    {
+      "rank": 21,
+      "score": 64,
+      "complexity": 8,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "ec7c9d760566a666fe3c301286da7249",
+      "main_table": "db_bom",
+      "all_tables": [
+        "db_bom",
+        "db_product",
+        "db_model",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT a.Product,\n       b.Description AS ProductDescription,\n       a.Model,\n       c.Description AS ModelDescription,\n       d.ColorTable,\n       d.Color,\n       d.Description AS ColorDescription\nFROM db_bom a\nJOIN db_product b ON a.Product=b.Product\nJOIN db_model c ON a.Model=c.Model\nJOIN db_color d ON a.ColorTable=d.ColorTable\nWHERE a.Product=?\nORDER BY a.Product,\n         a.Model,\n         d.Color",
+      "databases": [
+        "epic100320"
+      ]
+    },
+    {
+      "rank": 22,
+      "score": 64,
+      "complexity": 14,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "b1a7e6d957b5f8c90bffb084b169e5ee",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Site,\n       c.CapacityGroup,\n       b.Product,\n       SUM(b.SubTotal * b.Quantity) AS SalesTotal\nFROM db_invoice a\nINNER JOIN db_invoiceitem b ON a.Invoice=b.Invoice\nINNER JOIN db_product c ON b.Product=c.Product\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\nGROUP BY a.Site,\n         c.CapacityGroup,\n         b.Product\nORDER BY a.Site,\n         c.CapacityGroup,\n         b.Product",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 23,
+      "score": 64,
+      "complexity": 15,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "4d1e9c042117c3ec4a4212213e1bb1bf",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Site,\n       b.Product,\n       c.Description,\n       SUM(b.Quantity) AS ?,\n       SUM(b.SubTotal * b.Quantity) AS `Extended`\nFROM db_invoice a\nINNER JOIN db_invoiceitem b ON (a.Invoice=b.Invoice)\nINNER JOIN db_product c ON (b.Product=c.Product)\nWHERE (((a.Date BETWEEN STR_TO_DATE(REPLACE(?, ?, ?), ?) AND STR_TO_DATE(REPLACE(?, ?, ?), ?))\n        AND (a.Invoice > ?)\n        AND (a.Total < ?)\n        AND (b.Product <> ?)))\nGROUP BY (a.Site), (b.Product)\nORDER BY a.Site ASC,\n         b.Product ASC",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 24,
+      "score": 64,
+      "complexity": 11,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "3e7afa7cd58a54ae5af764c464892a7c",
+      "main_table": "db_invoiceitem",
+      "all_tables": [
+        "db_invoiceitem",
+        "db_invoice",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Invoice,\n       a.Wo,\n       SUM(b.Quantity) AS QtySum,\n       a.Freight\nFROM db_invoiceitem b\nJOIN db_invoice a ON b.Invoice=a.Invoice\nLEFT JOIN db_product c ON b.Product=c.Product\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\n  AND a.Customer =?\n  AND c.CapacityGroup BETWEEN ? AND ?\n  AND b.SubTotal > ?\n  AND b.Product <> ?\nGROUP BY a.Invoice",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 25,
+      "score": 64,
+      "complexity": 10,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "da69bbd7d28ddbd9c408046830db4c7c",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Customer,\n       SUM(b.SubTotal * b.Quantity) AS EXTENDED\nFROM db_invoice a\nJOIN db_invoiceitem b ON (a.Invoice=b.Invoice)\nJOIN db_product c ON (b.Product=c.Product)\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\n  AND a.Site = ?\n  AND c.CapacityGroup BETWEEN ? AND ?\n  AND a.Total >?\nGROUP BY a.Customer\nORDER BY EXTENDED DESC",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 26,
+      "score": 64,
+      "complexity": 14,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "6caa5435c18b7cb8fea656fae0c0dcf9",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Site,\n       c.CapacityGroup,\n       b.Product,\n       SUM(b.SubTotal * b.Quantity) AS SalesTotal\nFROM db_invoice a\nINNER JOIN db_invoiceitem b ON a.Invoice=b.Invoice\nINNER JOIN db_product c ON b.Product=c.Product\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\n  AND (a.Total >?\n       OR b.Product BETWEEN ? AND ?)\n  AND c.CapacityGroup BETWEEN ? AND ?\nGROUP BY a.Site,\n         c.CapacityGroup,\n         b.Product\nORDER BY a.Site,\n         c.CapacityGroup,\n         b.Product",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 27,
+      "score": 64,
+      "complexity": 14,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "b6457322fc100761b435bf99877d79a1",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Site,\n       b.Product,\n       c.Description,\n       b.EffectiveDiscRate,\n       SUM(b.SubTotal * b.Quantity) AS SalesTotal\nFROM db_invoice a\nINNER JOIN db_invoiceitem b ON a.Invoice=b.Invoice\nINNER JOIN db_product c ON b.Product=c.Product\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\n  AND a.Total >?\n  AND b.Product BETWEEN ? AND ?\n  AND a.Site=?\nGROUP BY a.Site,\n         b.Product,\n         b.EffectiveDiscRate\nORDER BY a.Site,\n         b.Product,\n         b.EffectiveDiscRate",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 28,
+      "score": 64,
+      "complexity": 10,
+      "categories": [
+        "reporting",
+        "financial"
+      ],
+      "query_hash": "e61154318922d84f5360c7292818900e",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Customer,\n       SUM(b.SubTotal * b.Quantity) AS EXTENDED\nFROM db_invoice a\nJOIN db_invoiceitem b ON (a.Invoice=b.Invoice)\nJOIN db_product c ON (b.Product=c.Product)\nWHERE a.Date BETWEEN ? AND ?\n  AND a.Invoice >?\n  AND a.Status <> ?\n  AND a.Site <> ?\n  AND c.CapacityGroup BETWEEN ? AND ?\n  AND (a.Total >?\n       OR b.Product BETWEEN ? AND ?)\nGROUP BY a.Customer\nORDER BY EXTENDED DESC",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 29,
+      "score": 62,
+      "complexity": 14,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "86caa2fcf3512eb93a154cd9a6b5bb98",
+      "main_table": "db_mfgitem",
+      "all_tables": [
+        "db_mfgitem",
+        "db_mfg",
+        "db_product",
+        "db_productprompt",
+        "db_productpromptvalue"
+      ],
+      "embedding_ready_query": "SELECT b.Category,\n       mf.Description,\n       b.Product AS vProduct,\n       p.Description AS vDescription,\n       pr.Item AS \"Item Num\",\n       pr.Prompt AS \"Prompt Num\",\n       ppv.CodeSeq,\n       ppv.Code,\n       ppv.Description AS \"Value\",\n       pr.*\nFROM db_mfgitem b\nJOIN db_mfg mf ON mf.Category = b.Category\nJOIN db_product p ON b.Product=p.Product\nLEFT JOIN db_productprompt pr ON b.Product = pr.Product\nLEFT JOIN db_productpromptvalue ppv ON pr.Product = ppv.Product\nAND pr.Item=ppv.Item\nWHERE (b.Category BETWEEN ? AND ?)\nORDER BY p.Product,\n         pr.Item",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 30,
+      "score": 61,
+      "complexity": 9,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "597d7443d4ab1e2b00ca2cdba9ee75a8",
+      "main_table": "db_bom",
+      "all_tables": [
+        "db_bom",
+        "db_color",
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Product,\n       a.Model,\n       a.ColorTable,\n       a.CoordinationTable,\n       b.Color,\n       b.InactiveDate\nFROM db_bom a\nLEFT JOIN db_color b ON a.ColorTable=b.ColorTable\nLEFT JOIN db_product c ON a.Product=c.Product\nWHERE c.CapacityGroup =?",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 31,
+      "score": 60,
+      "complexity": 7,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "e725193ca95826ba2fcec2673f0bfc7a",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product",
+        "db_mfgitem",
+        "db_bom",
+        "db_model"
+      ],
+      "embedding_ready_query": "SELECT bom.Product,\n       pr.Description AS ProductName,\n       bom.Model,\n       md.Description AS ModelName\nFROM db_product pr\nJOIN db_mfgitem b ON pr.Product = b.Product\nJOIN db_bom bom ON pr.Product = bom.Product\nJOIN db_model md ON bom.Model = md.Model\nWHERE (b.Category BETWEEN ? AND ?)",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 32,
+      "score": 55,
+      "complexity": 14,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "c2c4f11bbe53e57dd205b77a51925439",
+      "main_table": "db_productprompt",
+      "all_tables": [
+        "db_productprompt",
+        "db_productpromptvalue",
+        "db_product",
+        "db_color"
+      ],
+      "embedding_ready_query": "SELECT pp.product AS ?,\n       p.description AS ?,\n       pp.item AS ?,\n       pp.prompt AS ?,\n       ppv.code AS ?,\n       c.colortable AS ?,\n       c.color AS ?,\n       c.description AS ?,\n       c.constant? AS ?,\n       c.constant? AS ?\nFROM db_productprompt pp\nLEFT JOIN db_productpromptvalue ppv ON ppv.product = pp.product\nAND ppv.item=?\nAND ppv.colortable>?\nLEFT JOIN db_product p ON p.product = pp.product\nLEFT JOIN db_color c ON c.colortable = ppv.colortable\nWHERE pp.product < ?\n  AND pp.item = ?\nORDER BY pp.product",
+      "databases": [
+        "epic873518"
+      ]
+    },
+    {
+      "rank": 33,
+      "score": 54,
+      "complexity": 9,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "6cdb11355dbe9ad7870b59d8fc86a49d",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product",
+        "db_mfgitem",
+        "db_mfg"
+      ],
+      "embedding_ready_query": "SELECT pr.Product AS Product,\n       pr.Description AS ProductName,\n       b.Category AS Category,\n       c.Description AS CategoryName\nFROM db_product pr\nLEFT JOIN db_mfgitem b ON pr.Product = b.Product\nLEFT JOIN db_mfg c ON b.Category = c.Category",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 34,
+      "score": 53,
+      "complexity": 13,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "9df047689a1daca91b3f7a4317e8001b",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product",
+        "db_mfgitem",
+        "db_productprompt",
+        "db_productpromptvalue"
+      ],
+      "embedding_ready_query": "SELECT p.Product,\n       p.Description AS ProductDescription,\n       pp.Item,\n       pp.Prompt,\n       ppv.Code,\n       ppv.Description\nFROM db_product p\nJOIN db_mfgitem mfg ON p.Product = mfg.Product\nLEFT JOIN db_productprompt pp ON p.Product = pp.Product\nAND pp.Prompt like CONCAT(?, ?, ?)\nLEFT JOIN db_productpromptvalue ppv ON pp.Product = ppv.Product\nAND pp.Item=ppv.Item\nWHERE mfg.Category BETWEEN ? AND ?\nORDER BY p.Product,\n         pp.Item",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 35,
+      "score": 53,
+      "complexity": 14,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "9e48cbda34aa73c31e82b38d78abacaa",
+      "main_table": "db_printroute",
+      "all_tables": [
+        "db_printroute",
+        "db_bom",
+        "db_prod",
+        "db_product",
+        "db_model",
+        "db_department",
+        "db_mfgitem"
+      ],
+      "embedding_ready_query": "SELECT b.Category,\n       if(mid(pr.Description, ?, ?)=\"(CAR)\", \"(REM)\", mid(pr.Description, ?, ?)) AS Family,\n       pri.Product,\n       pr.Description AS ProductDescription,\n       pri.Model,\n       mo.Description AS ModelDescription,\n       pri.Department,\n       dep.Description AS DeparmentDescription,\n       pri.Var AS VariableNumber,\n       prov.Description AS VariableDescription,\n       pri.Fraction AS Fraction,\n       pri.ShowZero AS ShowZero,\n       pri.Print\nFROM db_printroute? pri\nJOIN db_bom bom ON pri.Product=bom.Product\nAND pri.Model=bom.Model\nJOIN db_prod? prov ON bom.ProductionTable = prov.Tbl\nAND pri.Var = prov.Var\nJOIN db_product pr ON pri.Product = pr.Product\nJOIN db_model mo ON pri.Model = mo.Model\nJOIN db_department dep ON pri.Department = dep.Department\nJOIN db_mfgitem b ON pr.Product = b.Product\nWHERE (b.Category BETWEEN ? AND ?)\nORDER BY b.Category,\n         Family,\n         pri.Product,\n         pri.Model,\n         pri.Department,\n         pri.Var",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 36,
+      "score": 53,
+      "complexity": 14,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "0a50bceed4adc1f316bd4f6632a06f05",
+      "main_table": "db_printroute",
+      "all_tables": [
+        "db_printroute",
+        "db_bom",
+        "db_prod",
+        "db_product",
+        "db_model",
+        "db_department",
+        "db_mfgitem"
+      ],
+      "embedding_ready_query": "SELECT b.Category,\n       if(mid(pr.Description, ?, ?)=\"(CAR)\", \"(REM)\", mid(pr.Description, ?, ?)) AS Family,\n       pri.Product,\n       pr.Description AS ProductDescription,\n       pri.Model,\n       mo.Description AS ModelDescription,\n       pri.Department,\n       dep.Description AS DeparmentDescription,\n       pri.Var AS VariableNumber,\n       prov.Description AS VariableDescription,\n       pri.Fraction AS Fraction,\n       pri.ShowZero AS ShowZero\nFROM db_printroute? pri\nJOIN db_bom bom ON pri.Product=bom.Product\nAND pri.Model=bom.Model\nJOIN db_prod? prov ON bom.ProductionTable = prov.Tbl\nAND pri.Var = prov.Var\nJOIN db_product pr ON pri.Product = pr.Product\nJOIN db_model mo ON pri.Model = mo.Model\nJOIN db_department dep ON pri.Department = dep.Department\nJOIN db_mfgitem b ON pr.Product = b.Product\nWHERE (pri.Print=\"Y\")\n  AND (b.Category BETWEEN ? AND ?)\n  AND (pr.Product=?)\nORDER BY b.Category,\n         Family,\n         pri.Product,\n         pri.Model,\n         pri.Department,\n         pri.Var",
+      "databases": [
+        "epic5101QA"
+      ]
+    },
+    {
+      "rank": 37,
+      "score": 53,
+      "complexity": 14,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "638157b25d6f4f1b5a7a4788ec5057d0",
+      "main_table": "db_printroute",
+      "all_tables": [
+        "db_printroute",
+        "db_bom",
+        "db_prod",
+        "db_product",
+        "db_model",
+        "db_department",
+        "db_mfgitem"
+      ],
+      "embedding_ready_query": "SELECT b.Category,\n       if(mid(pr.Description, ?, ?)=\"(CAR)\", \"(REM)\", mid(pr.Description, ?, ?)) AS Family,\n       pri.Product,\n       pr.Description AS ProductDescription,\n       pri.Model,\n       mo.Description AS ModelDescription,\n       pri.Department,\n       dep.Description AS DeparmentDescription,\n       pri.Var AS VariableNumber,\n       prov.Description AS VariableDescription,\n       pri.Fraction AS Fraction,\n       pri.ShowZero AS ShowZero\nFROM db_printroute? pri\nJOIN db_bom bom ON pri.Product=bom.Product\nAND pri.Model=bom.Model\nJOIN db_prod? prov ON bom.ProductionTable = prov.Tbl\nAND pri.Var = prov.Var\nJOIN db_product pr ON pri.Product = pr.Product\nJOIN db_model mo ON pri.Model = mo.Model\nJOIN db_department dep ON pri.Department = dep.Department\nJOIN db_mfgitem b ON pr.Product = b.Product\nWHERE (pri.Print=\"Y\")\n  AND (b.Category BETWEEN ? AND ?)\nORDER BY b.Category,\n         Family,\n         pri.Product,\n         pri.Model,\n         pri.Department,\n         pri.Var",
+      "databases": [
+        "epic5101",
+        "epic5101QA"
+      ]
+    },
+    {
+      "rank": 38,
+      "score": 52,
+      "complexity": 18,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "f060e95f9b588704a309f39315790dcd",
+      "main_table": "db_productprompt",
+      "all_tables": [
+        "db_productprompt",
+        "db_productpromptvalue",
+        "db_product",
+        "db_color",
+        "db_bom",
+        "db_bomcomponent"
+      ],
+      "embedding_ready_query": "SELECT pp.product AS ?,\n       p.description AS ?,\n       pp.item AS ?,\n       pp.prompt AS ?,\n       ppv.code AS ?,\n       c.colortable AS ?,\n       c.color AS ?,\n       c.description AS ?,\n       c.constant? AS ?,\n       c.constant? AS ?,\n       bc.item,\n       bc.component\nFROM db_productprompt pp\nLEFT JOIN db_productpromptvalue ppv ON ppv.product = pp.product\nAND ppv.item=?\nAND ppv.colortable>?\nLEFT JOIN db_product p ON p.product = pp.product\nLEFT JOIN db_color c ON c.colortable = ppv.colortable\nJOIN db_bom b ON b.product = pp.product\nJOIN db_bomcomponent bc ON bc.product = pp.product\nWHERE pp.product < ?\n  AND pp.item = ?\nORDER BY pp.product",
+      "databases": [
+        "epic873518"
+      ]
+    },
+    {
+      "rank": 39,
+      "score": 49,
+      "complexity": 7,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "0dc47c260a7f406e97a0a89a66942ee6",
+      "main_table": "db_bom",
+      "all_tables": [
+        "db_bom",
+        "db_product",
+        "db_laborstd"
+      ],
+      "embedding_ready_query": "SELECT product,\n       db_product.description AS ?,\n       model,\n       standardtable,\n       db_laborstd.description AS ?,\n       formula\nFROM db_bom\nJOIN db_product USING (product)\nLEFT JOIN db_laborstd ON (standardtable = tbl\n                          AND var IN (?))\nWHERE db_product.phaseoutdate = ?\n  AND db_product.discontinueddate = ?\n  AND TYPE = ?\n  AND db_bom.phaseoutdate = ?\n  AND db_bom.discontinueddate = ?",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 40,
+      "score": 47,
+      "complexity": 9,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "6835e35fe0b4a4db506df70458014e67",
+      "main_table": "db_bom",
+      "all_tables": [
+        "db_bom",
+        "db_product",
+        "db_model"
+      ],
+      "embedding_ready_query": "SELECT REPLACE(CONCAT(CONCAT(\"LSC\", prod.Product), model.model), ?, ?) AS ?,\n       prod.Product AS ?,\n       model.model AS ?,\n       CONCAT(CONCAT(prod.Description, \" - \"), model.Description) AS ?,\n       IF(LEFT(prod.Product, ?) = \"?\", \"?\", \"?\") AS ?,\n       IF(LEFT(prod.Product, ?) = \"?\", IF(prod.Description = \"MANUAL\"\n                                          OR model.Description = \"MANUAL\", \"?A\", \"?B\"), IF(prod.Description = \"MANUAL\"\n                                                                                             OR model.Description = \"MANUAL\", \"?A\", \"?B\")) AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?\nFROM db_bom bom\nJOIN db_product prod ON prod.Product = bom.Product\nJOIN db_model model ON bom.model = model.model",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 41,
+      "score": 46,
+      "complexity": 8,
+      "categories": [
+        "general"
+      ],
+      "query_hash": "d4a0b451c1001b12f2767c1efce53239",
+      "main_table": "db_bom",
+      "all_tables": [
+        "db_bom",
+        "db_color",
+        "db_coordination"
+      ],
+      "embedding_ready_query": "SELECT db_bom.Product,\n       db_bom.Model,\n       db_bom.coordinationtable,\n       db_coordination.description AS ?,\n       db_bom.ColorTable,\n       db_color.Color,\n       db_color.Description,\n       db_color.InactiveDate,\n       db_color.DiscontinuedDate\nFROM db_bom\nJOIN db_color ON db_bom.ColorTable = db_color.ColorTable\nLEFT JOIN db_coordination ON db_bom.coordinationtable = db_coordination.tbl\nWHERE db_bom.product IN (?)\nORDER BY db_bom.Product,\n         db_bom.Model,\n         db_color.Color",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 42,
+      "score": 43,
+      "complexity": 11,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "fee80fff31745018caf267882c751110",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product",
+        "db_productgroupitem",
+        "db_vendor",
+        "jrl_product_test"
+      ],
+      "embedding_ready_query": "SELECT z.ValidationUrl,\n       c.Vendor,\n       c.Name AS VendorName,\n       a.Product,\n       a.Description,\n       z.Valid,\n       z.Counter,\n       z.Created,\n       z.LastUpdated,\n       z.Problems,\n       CONCAT(?, REPLACE(REPLACE(REPLACE(z.Problems, ?, ?), ?, ?), ?, char(?)), ?) AS ParsedProblems\nFROM db_product a\nJOIN db_productgroupitem b ON a.Product=b.Product\nAND b.UseDRC=?\nJOIN db_vendor c ON a.OriginatingSystem=c.OriginatingSystem\nLEFT JOIN jrl_product_test z ON a.Product=z.Product\nWHERE (IF(? = ?, TRUE, z.Valid =?))\n  AND IF(? = ?, TRUE, z.ValidationUrl = ?)\n  AND IF(? = ?, TRUE, c.Vendor = ?)\n  AND z.LastUpdated >= NOW() - INTERVAL ? MINUTE\nORDER BY z.ValidationUrl,\n         a.Product",
+      "databases": [
+        "epic880422"
+      ]
+    },
+    {
+      "rank": 43,
+      "score": 43,
+      "complexity": 4,
+      "categories": [
+        "financial",
+        "sales_reporting"
+      ],
+      "query_hash": "6756386bcd8a10aeba0e0d1ee4d19ba3",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_salesperson"
+      ],
+      "embedding_ready_query": "SELECT b.Salesperson AS Salesperson,\n       b.name AS Name,\n       a.Invoice,\n       a.DatePaid,\n       a.Subtotal\nFROM db_invoice a\nJOIN db_salesperson b ON a.Salesperson=b.Salesperson\nWHERE a.DatePaid BETWEEN DATE_FORMAT(?, ?) AND DATE_FORMAT(?, ?)\n  AND MONTH(a.DatePaid) = ?\n  AND b.Salesperson = ?\n  AND a.Status = ?\n  AND a.Subtotal > ?",
+      "databases": [
+        "epic11472"
+      ]
+    },
+    {
+      "rank": 44,
+      "score": 43,
+      "complexity": 13,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "fde88936103825e16604b5d5b31d5d3b",
+      "main_table": "db_po",
+      "all_tables": [
+        "db_po",
+        "db_poitem",
+        "db_vendor",
+        "db_status"
+      ],
+      "embedding_ready_query": "SELECT p.Vendor,\n       v.Name,\n       CONCAT(pi.Po, ?, pi.Item) AS ?,\n       p.Warehouse,\n       pi.Stock,\n       pi.Comment,\n       s.Description AS ?,\n       p.Date,\n       pi.DueDate,\n       pi.QtyOrdered,\n       pi.QtyReceived,\n       pi.DateReceived,\n       pi.QtyBackordered,\n       pi.DateBackorder,\n       pi.QtyClosed\nFROM db_po p\nJOIN db_poitem pi ON pi.Po=p.Po\nLEFT JOIN db_vendor v ON v.Vendor=p.Vendor\nJOIN db_status s ON s.Status=p.Status\nAND TYPE=?\nWHERE p.Status IN (?,\n                   ?,\n                   ?)\n  AND pi.Stock <> ?\n  AND pi.QtyOrdered > (pi.QtyReceived + pi.QtyClosed)\n  AND pi.DueDate < ?\nORDER BY p.Date",
+      "databases": [
+        "epic17539"
+      ]
+    },
+    {
+      "rank": 45,
+      "score": 42,
+      "complexity": 13,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "a0be0d89324521a97a452c14c9c5f9e9",
+      "main_table": "db_po",
+      "all_tables": [
+        "db_po",
+        "db_poitem",
+        "db_loginid",
+        "db_vendor",
+        "db_status"
+      ],
+      "embedding_ready_query": "SELECT db_loginid.loginid,\n       po,\n       date AS ?,\n       s.description AS ?,\n       db_po.vendor,\n       v.name,\n       item,\n       stock,\n       si.description AS ?,\n       qty,\n       poi.datereceived AS ?\nFROM db_po\nJOIN db_poitem poi USING (po)\nJOIN db_loginid ON (db_loginid.counter = db_po.lid)\nJOIN db_vendor v ON (v.vendor = db_po.vendor)\nJOIN db_status s ON (db_po.status = s.status\n                     AND TYPE = ?)\nJOIN db_status si ON (poi.status = si.status\n                      AND si.type = ?)\nWHERE date BETWEEN DATE_FORMAT(?, ?) AND DATE_FORMAT(?, ?)\n  AND db_po.status <> ?",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 46,
+      "score": 41,
+      "complexity": 18,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "21135dd6e91fc3ff041117e7b47d4585",
+      "main_table": "db_po",
+      "all_tables": [
+        "db_po",
+        "db_poitem",
+        "db_status",
+        "db_vendor",
+        "db_customerproject"
+      ],
+      "embedding_ready_query": "SELECT po.Po AS PurchaseOrder,\n       pi.Item,\n       pi.QtyOrdered,\n       pi.QtyReceived,\n       pi.Product,\n       pi.ProductPoName,\n       pi.Stock,\n       pi.Description,\n       pi.DueDate,\n       IFNULL(cp.Description, ?) AS ProjectName,\n       IFNULL(v.Name, ?) AS Vendor,\n       po.Date,\n       IFNULL(CONCAT(?, FORMAT(pi.Goods, ?)), ?) AS Goods,\n       IFNULL(spo.Description, ?) AS ?\nFROM db_po po\nJOIN db_poitem pi ON po.Po=pi.Po\nJOIN db_status spo ON po.Status=spo.Status\nAND spo.type=\"P\"\nLEFT JOIN db_vendor v ON po.Vendor=v.Vendor\nLEFT JOIN db_customerproject cp ON po.CustomerProjectID=cp.Id\nWHERE spo.Status < ?\n  AND if(?=?, TRUE, v.Vendor=?)\n  AND if(?=?, TRUE, po.Date>=DATE_FORMAT(?, ?))\n  AND if(DATE_FORMAT(?, ?)=?, TRUE, po.Date<=DATE_FORMAT(?, ?))\n  AND pi.Stock <> \"SPECIAL\"\n  AND pi.Stock IS NOT NULL\nORDER BY po.Vendor,\n         spo.Status",
+      "databases": [
+        "epic873518"
+      ]
+    },
+    {
+      "rank": 47,
+      "score": 41,
+      "complexity": 18,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "a022b1acc05f5a1f873c3504834ff9ce",
+      "main_table": "db_po",
+      "all_tables": [
+        "db_po",
+        "db_poitem",
+        "db_status",
+        "db_vendor",
+        "db_customerproject"
+      ],
+      "embedding_ready_query": "SELECT po.Po AS PurchaseOrder,\n       pi.Item,\n       pi.QtyOrdered,\n       pi.QtyReceived,\n       pi.Product,\n       pi.ProductPoName,\n       pi.Description,\n       pi.DueDate,\n       IFNULL(cp.Description, ?) AS ProjectName,\n       IFNULL(v.Name, ?) AS Vendor,\n       po.Date,\n       IFNULL(CONCAT(?, FORMAT(pi.Goods, ?)), ?) AS Goods,\n       IFNULL(spo.Description, ?) AS ?\nFROM db_po po\nJOIN db_poitem pi ON po.Po=pi.Po\nJOIN db_status spo ON po.Status=spo.Status\nAND spo.type=\"P\"\nLEFT JOIN db_vendor v ON po.Vendor=v.Vendor\nLEFT JOIN db_customerproject cp ON po.CustomerProjectID=cp.Id\nWHERE spo.Status < ?\n  AND if(?=?, TRUE, v.Vendor=?)\n  AND if(?=?, TRUE, po.Date>=DATE_FORMAT(?, ?))\n  AND if(DATE_FORMAT(?, ?)=?, TRUE, po.Date<=DATE_FORMAT(?, ?))\n  AND pi.ProductPoName REGEXP ?\nORDER BY po.Vendor,\n         spo.Status",
+      "databases": [
+        "epic873518"
+      ]
+    },
+    {
+      "rank": 48,
+      "score": 40,
+      "complexity": 11,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "14060e09c0805cc6f1535f681418edbe",
+      "main_table": "db_apitem",
+      "all_tables": [
+        "db_apitem",
+        "db_ap",
+        "db_vendor",
+        "db_status",
+        "db_checkitem"
+      ],
+      "embedding_ready_query": "SELECT ap.Vendor,\n       v.Name,\n       ap.ap AS ?,\n       sts.Description AS ?,\n       ap.Invoice,\n       ap.Currency,\n       ap.ExchangeRate,\n       DATE_FORMAT(ap.Date, \"%c/%e/%Y\") AS ?,\n       chk.Tranx AS ?,\n       chk.Amount AS ?\nFROM db_apitem api\nJOIN db_ap ap ON ap.ap = api.ap\nJOIN db_vendor v ON v.Vendor = ap.Vendor\nJOIN db_status sts ON sts.Status = ap.Status\nAND sts.Type = ?\nJOIN db_checkitem chk ON chk.Ap = api.Ap\nAND chk.Item = api.Item\nWHERE ap.Date >= ?",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 49,
+      "score": 39,
+      "complexity": 10,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "599a1e48e7702804a33fe414e348b6e7",
+      "main_table": "db_ap",
+      "all_tables": [
+        "db_ap",
+        "db_status",
+        "db_vendor",
+        "db_loginid"
+      ],
+      "embedding_ready_query": "SELECT a.Ap AS AP_Trax,\n       a.Vendor AS Vendor_ID,\n       c.Name AS Vendor_Name,\n       a.GlPeriod,\n       a.Status AS Status_No,\n       b.Description AS Status,\n       a.Po,\n       a.Invoice,\n       a.Date,\n       a.Total,\n       a.PayAmount,\n       concat(d.Name, \" \", d.LastName) AS USER,\n       a.AuthNum,\n       a.Container,\n       a.Comments\nFROM db_ap a\nJOIN db_status b ON b.type = ?\nAND a.Status = b.Status\nJOIN db_vendor c ON c.vendor = a.vendor\nJOIN db_loginid d ON d.counter = a.lid\nWHERE b.Description = ?\n  AND GlPeriod < ?\nORDER BY GlPeriod,\n         a.Vendor",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 50,
+      "score": 39,
+      "complexity": 35,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "33de0d75d735793e466af65c38cead38",
+      "main_table": "db_ap",
+      "all_tables": [
+        "db_ap",
+        "db_vendor",
+        "db_status",
+        "db_customerproject",
+        "db_customerprojectstatus"
+      ],
+      "embedding_ready_query": "SELECT v.Name,\n       IFNULL(cp.Description, ?) AS Project,\n       IFNULL(cps.Description, ?) AS \"ProjectStatus\",\n       ap.Ap AS \"Tranx\",\n       s.Description AS Status,\n       ap.Po,\n       ap.Invoice AS \"Inv/Chk\",\n       IF(ap.Type=\"P\", \"PO\", \"Misc\") AS TYPE,\n       IF(ap.GlPeriod >= ?, CONCAT(ap.GlPeriod - ?, \"-Prev\"), ap.GlPeriod) AS GlPeriod,\n       ap.Date AS \"Date\",\n       ap.DueDate,\n       ap.Currency,\n       ap.Total,\n       IF(ap.Aging? > ?, ap.Aging?, ?) AS CURRENT,\n       IF(ap.Aging? > ?, ap.Aging?, ?) AS ?,\n       IF(ap.Aging? > ?, ap.Aging?, ?) AS ?,\n       IF(ap.Aging? > ?, ap.Aging?, ?) AS ?,\n       IF(ap.Aging? > ?, ap.Aging?, ?) AS ?,\n       ap.BalanceDue,\n       ap.PaymentHold AS InDispute\nFROM db_ap ap\nLEFT JOIN db_vendor v ON ap.Vendor = v.Vendor\nLEFT JOIN db_status s ON ap.Status = s.Status\nAND s.Type = ?\nLEFT JOIN db_customerproject cp ON ap.CustomerProjectID = cp.ID\nLEFT JOIN db_customerprojectstatus cps ON cp.ProjectStatusID = cps.ID\nWHERE ap.Invoice IS NOT NULL\n  AND s.Status < ?\n  AND ((? = ?\n        OR ap.Vendor = ?))\n  AND ? <> ?\nUNION ALL\nSELECT v.Name,\n       ? AS Project,\n       ? AS \"ProjectStatus\",\n       chk.Tranx AS \"Tranx\",\n       chks.Description AS Status,\n       ? AS Po,\n       chk.CheckNo AS \"Inv/Chk\",\n       IF(chk.Type=\"D\", \"Deposit\", ?) AS TYPE,\n       IF(chk.GlPeriod >= ?, CONCAT(chk.GlPeriod - ?, \"-Prev\"), chk.GlPeriod) AS GlPeriod,\n       chk.Date AS \"Date\",\n       ? AS DueDate,\n       chk.Currency,\n       chk.Cash AS \"Total\",\n       ? AS CURRENT,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS ?,\n       ? AS \"BalanceDue\",\n       ? AS InDispute\nFROM db_check chk\nLEFT JOIN db_vendor v ON chk.Vendor = v.Vendor\nLEFT JOIN db_status chks ON chk.Status = chks.Status\nAND chks.Type = ?\nWHERE chk.CheckNo IS NOT NULL\n  AND chk.Type = \"D\"\n  AND chk.Status < ?\n  AND ((? = ?\n        OR chk.Vendor = ?))\n  AND (? = ?\n       OR ? = ?)\nORDER BY Name,\n         TYPE,\n         Tranx;",
+      "databases": [
+        "epic873518"
+      ]
+    },
+    {
+      "rank": 51,
+      "score": 39,
+      "complexity": 10,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "de3ef0fbc2a530c44ea3dbc74770a82e",
+      "main_table": "db_ap",
+      "all_tables": [
+        "db_ap",
+        "db_status",
+        "db_vendor",
+        "db_loginid"
+      ],
+      "embedding_ready_query": "SELECT a.Ap AS AP_Trax,\n       a.Vendor AS Vendor_ID,\n       c.Name AS Vendor_Name,\n       a.GlPeriod,\n       a.Status AS Status_No,\n       b.Description AS Status,\n       a.Po,\n       a.Invoice,\n       a.Date,\n       a.Total,\n       a.PayAmount,\n       concat(d.Name, \" \", d.LastName) AS USER\nFROM db_ap a\nJOIN db_status b ON b.type = ?\nAND a.Status = b.Status\nJOIN db_vendor c ON c.vendor = a.vendor\nJOIN db_loginid d ON d.counter = a.lid\nWHERE b.Description = ?\n  AND GlPeriod < ?\nORDER BY GlPeriod,\n         a.Vendor",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 52,
+      "score": 38,
+      "complexity": 14,
+      "categories": [
+        "financial",
+        "vendor_management"
+      ],
+      "query_hash": "63a21c33bb437d1e1d93b06db4dd4b3e",
+      "main_table": "db_check",
+      "all_tables": [
+        "db_check",
+        "db_status",
+        "db_vendor"
+      ],
+      "embedding_ready_query": "SELECT chk.Tranx,\n       s.Description AS Status,\n       v.Name AS VendorName,\n       chk.Date,\n       chk.GLCash AS GL,\n       chk.Cash,\n       chk.Description\nFROM db_check chk\nLEFT JOIN db_status s ON chk.Status=s.Status\nAND s.type=\"D\"\nLEFT JOIN db_vendor v ON chk.Vendor=v.Vendor\nWHERE chk.Type = \"D\"\n  AND if(?=?, TRUE, chk.Vendor=?)\n  AND if(?=?, TRUE, chk.Date >= DATE_FORMAT(?, ?))\n  AND if(?=?, TRUE, chk.Date <= DATE_FORMAT(?, ?))\nORDER BY Name, Date",
+      "databases": [
+        "epic873518"
+      ]
+    },
+    {
+      "rank": 53,
+      "score": 37,
+      "complexity": 9,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "a9aa1d71a8bd8667729d3a8ec052ce05",
+      "main_table": "db_ap",
+      "all_tables": [
+        "db_ap",
+        "db_vendor",
+        "db_status",
+        "db_loginid"
+      ],
+      "embedding_ready_query": "SELECT po,\n       db_ap.vendor,\n       db_vendor.name,\n       invoice,\n       comments,\n       concat(db_loginid.name, ?, lastname) AS ?, date, duedate,\n                                                                     glperiod,\n                                                                     db_status.description AS ?\nFROM db_ap\nJOIN db_vendor USING (vendor)\nJOIN db_status ON (db_ap.status = db_status.status\n                   AND db_status.type = ?)\nJOIN db_loginid ON (lid = db_loginid.counter)\nWHERE db_ap.paymenthold = ?\n  AND db_ap.status <> ?",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 54,
+      "score": 37,
+      "complexity": 3,
+      "categories": [
+        "financial"
+      ],
+      "query_hash": "14e8da8cf414e41065b21faedc110000",
+      "main_table": "db_invoiceitem",
+      "all_tables": [
+        "db_invoiceitem",
+        "db_invoice"
+      ],
+      "embedding_ready_query": "SELECT b.Invoice,\n       a.Item,\n       b.Wo,\n       b.Customer\nFROM db_invoiceitem a\nJOIN db_invoice b ON a.Invoice=b.Invoice\nWHERE b.Site =?",
+      "databases": [
+        "epic53048"
+      ]
+    },
+    {
+      "rank": 55,
+      "score": 37,
+      "complexity": 5,
+      "categories": [
+        "financial"
+      ],
+      "query_hash": "248dfa0db5d21eaf46986ce34c7a52c7",
+      "main_table": "db_invoiceitem",
+      "all_tables": [
+        "db_invoiceitem",
+        "db_invoice"
+      ],
+      "embedding_ready_query": "SELECT b.Date,\n       a.Invoice,\n       a.Wo,\n       a.Product\nFROM db_invoiceitem a\nJOIN db_invoice b ON b.Invoice = a.Invoice\nWHERE b.Date > ?",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 56,
+      "score": 37,
+      "complexity": 5,
+      "categories": [
+        "financial"
+      ],
+      "query_hash": "fec750d182e81ba7eaf1fe415b72eaf8",
+      "main_table": "db_invoice",
+      "all_tables": [
+        "db_invoice",
+        "db_invoiceitem"
+      ],
+      "embedding_ready_query": "SELECT i.Wo,\n       i.Invoice,\n       i.Customer,\n       i.Date,\n       i.Freight,\n       ii.Item,\n       ii.Product\nFROM db_invoice i\nJOIN db_invoiceitem ii ON i.Wo=ii.Wo\nWHERE (i.Date BETWEEN DATE_FORMAT(?, ?) AND DATE_FORMAT(?, ?))\n  AND ii.Product IN (?,\n                     ?,\n                     ?,\n                     ?,\n                     ?)\n  AND (i.Freight > (?))",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 57,
+      "score": 37,
+      "complexity": 9,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "c80a32b3ecb15e81842f942a34238201",
+      "main_table": "db_ap",
+      "all_tables": [
+        "db_ap",
+        "db_status",
+        "db_apitem",
+        "db_vendor"
+      ],
+      "embedding_ready_query": "SELECT a.date,\n       a.ap,\n       a.vendor,\n       v.name,\n       a.invoice,\n       a.po,\n       a.status,\n       a.glperiod,\n       i.item,\n       i.stock,\n       i.type,\n       i.quantity,\n       i.unitprice,\n       i.quantity * i.unitprice AS ?,\n       a.netdue,\n       a.payamount,\n       b.description\nFROM db_ap a\nJOIN db_status b ON b.type = ?\nAND a.status = b.status\nJOIN db_apitem i ON i.ap = a.ap\nJOIN db_vendor v ON v.vendor = a.vendor\nWHERE a.date BETWEEN \"?-?-?\" AND \"?-?-?\"\n  AND b.description = ?\n  OR b.description = ?",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 58,
+      "score": 36,
+      "complexity": 7,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "b61271acbbb1cf80d57930e6558b41cc",
+      "main_table": "db_ap",
+      "all_tables": [
+        "db_ap",
+        "db_status",
+        "db_vendor"
+      ],
+      "embedding_ready_query": "SELECT a.Ap AS AP_Trax,\n       a.Vendor AS Vendor_ID,\n       c.Name AS Vendor_Name,\n       a.GlPeriod,\n       a.Status AS Status_No,\n       b.Description AS Status,\n       a.Po,\n       a.Invoice,\n       a.Date,\n       a.Total,\n       a.PayAmount\nFROM db_ap a\nJOIN db_status b ON b.type = ?\nAND a.Status = b.Status\nJOIN db_vendor c ON c.vendor = a.vendor\nWHERE b.Description = ?\n  AND GlPeriod < ?\nORDER BY GlPeriod,\n         a.Vendor",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 59,
+      "score": 31,
+      "complexity": 3,
+      "categories": [
+        "sales_reporting"
+      ],
+      "query_hash": "4d10e5ace4db2369b32f0947b9786f95",
+      "main_table": "db_customersalesperson",
+      "all_tables": [
+        "db_customersalesperson",
+        "db_salesperson"
+      ],
+      "embedding_ready_query": "SELECT cs.Customer,\n       cs.I AS POSITION,\n       cs.Salesperson,\n       sp.Name,\n       sp.FirstName\nFROM db_customersalesperson cs\nJOIN db_salesperson sp ON sp.Salesperson=cs.Salesperson",
+      "databases": [
+        "epic5030"
+      ]
+    },
+    {
+      "rank": 60,
+      "score": 31,
+      "complexity": 9,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "e202a2615e8bb7ae26aeb454ab885edf",
+      "main_table": "db_status",
+      "all_tables": [
+        "db_status",
+        "db_vendor"
+      ],
+      "embedding_ready_query": "SELECT ap.Vendor,\n       v.Name,\n       ap.ap AS ?,\n  (SELECT s.Description\n   FROM db_status s\n   WHERE s.Status = ap.Status\n     AND s.Type = ?) ?,\n                       ap.Invoice\nFROM db_ap ap\nINNER JOIN db_vendor v ON v.Vendor = ap.Vendor\nWHERE ap.ap = ?",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 61,
+      "score": 30,
+      "complexity": 29,
+      "categories": [
+        "sales_reporting"
+      ],
+      "query_hash": "56ca5622d6503794248be8ae50d2861c",
+      "main_table": "db_salesperson",
+      "all_tables": [
+        "db_salesperson",
+        "db_customersalesperson"
+      ],
+      "embedding_ready_query": "SELECT db_customer.Customer,\n       db_customer.`Name`,\n       db_customer.UserField? AS ?,\n       db_customer.AccountType,\n       db_customer.UserField? AS ?,\n       db_customer.UserField? AS ?,\n       db_customer.DateOpened,\n       db_customer.Contact,\n       db_customer.Phone,\n       db_customer.Address?,\n       db_customer.Address?,\n       db_customer.Address?,\n       db_customer.City,\n       db_customer.State,\n       db_customer.Zip,\n       db_customer.Email,\n       s?.Salesperson AS `Rep Agency #`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          s?.Salesperson AS `Buyer#`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          s?.Salesperson AS `RSM#`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          db_customer.ShipEmail,\n                                          db_customer.OrderEmail,\n                                          db_customer.InvoiceEmail\nFROM db_customer\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nWHERE s?.Salesperson = ?\n  AND db_customer.customer < ?\n  AND db_customer.UserField? IN (?,\n                                 ?)\n  AND db_customer.DeActivate = ?\nORDER BY db_customer.`Name` ASC",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 62,
+      "score": 30,
+      "complexity": 29,
+      "categories": [
+        "sales_reporting"
+      ],
+      "query_hash": "8ccb01d1d14f4274fc113f5931530d70",
+      "main_table": "db_salesperson",
+      "all_tables": [
+        "db_salesperson",
+        "db_customersalesperson"
+      ],
+      "embedding_ready_query": "SELECT db_customer.Customer,\n       db_customer.`Name`,\n       db_customer.UserField? AS ?,\n       db_customer.AccountType,\n       db_customer.UserField? AS ?,\n       db_customer.DeActivate AS ?,\n       db_customer.UserField? AS ?,\n       db_customer.UserField? AS ?,\n       db_customer.DateOpened,\n       db_customer.Other AS ?,\n       db_customer.CreditLimit AS ?,\n       db_customer.UserField? AS ?,\n       db_customer.UserField? AS ?,\n       db_customer.Contact,\n       db_customer.Phone,\n       db_customer.Address?,\n       db_customer.Address?,\n       db_customer.Address?,\n       db_customer.City,\n       db_customer.State,\n       db_customer.Zip,\n       db_customer.Email,\n       db_customer.BillAddress?,\n       db_customer.BillAddress?,\n       db_customer.BillAddress?,\n       db_customer.BillCity,\n       db_customer.BillState,\n       db_customer.BillZip,\n       db_customer.Country,\n       s?.Salesperson AS `Rep Agency #`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          s?.Salesperson AS `Buyer#`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          s?.Salesperson AS `RSM#?`,\n\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) `QMOTION RSM?`,\n                                          db_customer.ShipEmail,\n                                          db_customer.OrderEmail,\n                                          db_customer.InvoiceEmail\nFROM db_customer\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nWHERE db_customer.UserField? IN (?,\n                                 ?)\n  AND db_customer.customer < ?\n  AND db_customer.Customer <> ?\n  AND db_customer.country IN (?,\n                              ?)\nORDER BY db_customer.`Name` ASC",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 63,
+      "score": 30,
+      "complexity": 29,
+      "categories": [
+        "sales_reporting"
+      ],
+      "query_hash": "d9fb8c23f2969848ab854c06ea10be08",
+      "main_table": "db_salesperson",
+      "all_tables": [
+        "db_salesperson",
+        "db_customersalesperson"
+      ],
+      "embedding_ready_query": "SELECT db_customer.Customer,\n       db_customer.`Name`,\n       db_customer.UserField? AS ?,\n       db_customer.AccountType,\n       db_customer.UserField? AS ?,\n       db_customer.UserField? AS ?,\n       db_customer.DateOpened,\n       db_customer.Contact,\n       db_customer.Phone,\n       db_customer.Address?,\n       db_customer.Address?,\n       db_customer.Address?,\n       db_customer.City,\n       db_customer.State,\n       db_customer.Zip,\n       db_customer.Email,\n       s?.Salesperson AS `Rep Agency #`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          s?.Salesperson AS `Buyer#`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          s?.Salesperson AS `RSM#`,\n  (SELECT CONCAT(sp.FirstName, ?, sp.`Name`)\n   FROM db_salesperson sp\n   WHERE sp.salesperson = s?.salesperson) ?,\n                                          db_customer.ShipEmail,\n                                          db_customer.OrderEmail,\n                                          db_customer.InvoiceEmail\nFROM db_customer\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nWHERE s?.salesperson IN (?,\n                         ?,\n                         ?,\n                         ?,\n                         ?,\n                         ?,\n                         ?)\n  AND db_customer.customer < ?\n  AND db_customer.UserField? IN (?,\n                                 ?)\n  AND db_customer.DeActivate = ?\nORDER BY db_customer.`Name` ASC",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 64,
+      "score": 29,
+      "complexity": 3,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "9f8c4ee989d189a01bfcd8ed3ecbbf11",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT CONCAT(Product, ?) AS Product\nFROM db_product\nWHERE DiscontinuedDate <> ?\nORDER BY DiscontinuedDate ASC;",
+      "databases": [
+        "epic89527"
+      ]
+    },
+    {
+      "rank": 65,
+      "score": 28,
+      "complexity": 12,
+      "categories": [
+        "vendor_management"
+      ],
+      "query_hash": "fac5e4f4817614e9906a65bfd4b083ad",
+      "main_table": "db_apitem",
+      "all_tables": [
+        "db_apitem",
+        "db_ap",
+        "db_vendor",
+        "db_apitemgl",
+        "db_gl",
+        "db_status"
+      ],
+      "embedding_ready_query": "SELECT ap.Vendor,\n       v.Name,\n       ap.ap AS ?,\n       sts.Description AS ?,\n       ap.Invoice,\n       api.Item,\n       apigl.I,\n       apigl.Gl AS ?,\n       gl.Description,\n       apigl.Amount,\n       ap.Currency,\n       ap.ExchangeRate,\n       DATE_FORMAT(ap.Date, \"%c/%e/%Y\") AS ?\nFROM db_apitem api\nJOIN db_ap ap ON ap.ap = api.ap\nJOIN db_vendor v ON v.Vendor = ap.Vendor\nJOIN db_apitemgl apigl ON apigl.Ap = api.Ap\nAND apigl.Item = api.Item\nJOIN db_gl gl ON gl.Gl = apigl.Gl\nJOIN db_status sts ON sts.Status = ap.Status\nAND sts.Type = ?\nWHERE ap.Vendor IN (?,\n                    ?)",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 66,
+      "score": 27,
+      "complexity": 3,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "b8fb3054ee9d02b92c6bbf781a105b35",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT CONCAT(IF(p.Product IN (?, ?, ?),\"?\", IF(p.Product IN (?, ?),\"?,?\", IF(p.Product IN (?),\"?\", IF(p.Product IN (?),\"?,?,?\", IF(p.Product IN (?),\"?\", IF(p.Product IN (?),\"?\", IF(p.Product IN (?),\"?\", IF(p.Product IN (?),\"?\", IF(p.Product IN (?),\"?,?,?\", IF(p.Product IN (?),\"?,?,?\", IF(p.Product IN (?),\"?\", IF(p.Product IN (?, ?, ?),\"?\", IF(p.Product IN (?),\"?\", IF(p.Product IN (?, ?),\"?\", IF(p.Product IN (?),\"?,?\", p.Product))))))))))))))))AS `GCC ID`,\n       CONCAT(IF(p.Product IN (?, ?, ?),\"Economy Cordless Light-Filtering Cellular Shades\", IF(p.Product IN (?, ?),\"Economy Woven Wood Shade,Woven Wood\", IF(p.Product IN (?),\"Flat Sheer Shade\", IF(p.Product IN (?),\"Premium Roman Shade,Roman Shades\", IF(p.Product IN (?),\"Easy Classic Pleat Drapery\", IF(p.Product IN (?),\"Easy Rod Pocket Drapery\", IF(p.Product IN (?),\"Easy Grommet Drapery Panel\", IF(p.Product IN (?),\"Cordless Mini Blind\", IF(p.Product IN (?),\"Solar Roller Shade,Roller Shades,Solar Roller Shades\", IF(p.Product IN (?),\"Outdoor Solar Shade,Outdoor Shades\", IF(p.Product IN (?),\"Manhattan ?IN Sheer Shadings\", IF(p.Product IN (?, ?, ?),\"Economy Cordless Blackout Cellular Shades\", IF(p.Product IN (?),\"Completely Cordless Mini Blinds\", IF(p.Product IN (?, ?),\"Economy Blackout Roller Shade,Roller Shades\", IF(p.Product IN (?),\"Cordless Pleated Shade,Pleated Shade\", p.Product)))))))))))))))) AS `Product Name`,\n       p.Days\nFROM db_product p\nWHERE p.Product BETWEEN (?) AND (?)\n  AND p.DiscontinuedDate = ?\n  AND p.Product NOT IN (?,\n                        ?)",
+      "databases": [
+        "epic5101"
+      ]
+    },
+    {
+      "rank": 67,
+      "score": 19,
+      "complexity": 13,
+      "categories": [
+        "sales_reporting"
+      ],
+      "query_hash": "14272c84dbcd469e1274b6711d26db43",
+      "main_table": "db_accounttype",
+      "all_tables": [
+        "db_accounttype",
+        "db_customersalesperson"
+      ],
+      "embedding_ready_query": "SELECT db_customer.Customer,\n       db_customer.`Name`,\n       db_customer.CreditLimit,\n       db_customer.Terms,\n       s?.Salesperson Salesperson?,\n       s?.Salesperson Salesperson?,\n       db_customer.Currency,\n       db_customer.AccountType,\n\n  (SELECT Description\n   FROM db_accounttype\n   WHERE db_accounttype.accounttype = db_customer.accounttype)AccountDescription,\n       db_customer.Other\nFROM db_customer\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?\nLEFT JOIN db_customersalesperson AS s? ON db_customer.customer = s?.customer\nAND s?.I = ?",
+      "databases": [
+        "epic4221933"
+      ]
+    },
+    {
+      "rank": 68,
+      "score": 19,
+      "complexity": 2,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "1c81ccaf9dfbfbdeb96c9af1234122c0",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT Product,\n       Description,\n       DiscontinuedDate\nFROM db_product\nWHERE DiscontinuedDate <> ?\nORDER BY DiscontinuedDate ASC;",
+      "databases": [
+        "epic89527QA"
+      ]
+    },
+    {
+      "rank": 69,
+      "score": 17,
+      "complexity": 1,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "24d4ca2d04217cdf1a6ccb7060dce71c",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT Product,\n       Description,\n       DiscontinuedDate\nFROM db_product",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    },
+    {
+      "rank": 70,
+      "score": 17,
+      "complexity": 1,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "13be8321b3d601c36456ba386b6ffd45",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT Product,\n       Days\nFROM db_product",
+      "databases": [
+        "epic1564589"
+      ]
+    },
+    {
+      "rank": 71,
+      "score": 17,
+      "complexity": 1,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "9a713563c704a5ab3083f37558173ec9",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT Product,\n       Description,\n       Days,\n       DiscontinuedDate,\n       Used\nFROM db_product",
+      "databases": [
+        "epic11472",
+        "epicjrl2"
+      ]
+    },
+    {
+      "rank": 72,
+      "score": 17,
+      "complexity": 1,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "1f8465848bc1a205d30641e58a682159",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT a.Product,\n       a.Description AS ProductDescription,\n       a.KeyMetricVariable\nFROM db_product a\nWHERE a.Product>?",
+      "databases": [
+        "epic100320"
+      ]
+    },
+    {
+      "rank": 73,
+      "score": 17,
+      "complexity": 1,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "4067ca5ce032ca83cdfe0280e0e84b91",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT Product,\n       Description,\n       StateTaxable\nFROM db_product",
+      "databases": [
+        "epic11472",
+        "epic12698"
+      ]
+    },
+    {
+      "rank": 74,
+      "score": 17,
+      "complexity": 1,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "65ca89d8cd2c07e15a87fb171acfeb04",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT *\nFROM db_product;",
+      "databases": [
+        "epic2093156",
+        "epic2093156QA"
+      ]
+    },
+    {
+      "rank": 75,
+      "score": 17,
+      "complexity": 1,
+      "categories": [
+        "simple_lookup"
+      ],
+      "query_hash": "63ff3188e7db25a64699836f11a9b0b4",
+      "main_table": "db_product",
+      "all_tables": [
+        "db_product"
+      ],
+      "embedding_ready_query": "SELECT *\nFROM db_product ;",
+      "databases": [
+        "epic5071ULTRA"
+      ]
+    }
+  ]
+}

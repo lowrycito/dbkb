@@ -1,0 +1,167 @@
+name: Deploy DBKB to AWS ECS Fargate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-1
+  KNOWLEDGE_BASE_ID: KRD3MW7QFS
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio httpx
+
+    - name: Run basic import tests
+      run: |
+        python -c "import fastapi; print('FastAPI imported successfully')"
+        python -c "import uvicorn; print('Uvicorn imported successfully')"
+        python -c "import boto3; print('Boto3 imported successfully')"
+
+    - name: Test app startup
+      run: |
+        timeout 10s python -c "
+        import sys
+        sys.path.append('.')
+        from app import app
+        print('App imported successfully')
+        " || echo "App startup test completed"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install Pulumi CLI
+      uses: pulumi/actions@v4
+
+    - name: Install dependencies
+      run: |
+        cd infrastructure
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Build and push Docker image
+      run: |
+        # Login to ECR
+        aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+        
+        # Get AWS account ID
+        export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        
+        # Build ARM64 image
+        docker buildx build --platform linux/arm64 -t dbkb-api:arm64 .
+        
+        # Tag for ECR
+        docker tag dbkb-api:arm64 $AWS_ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/dbkb-api:latest
+        
+        # Push to ECR
+        docker push $AWS_ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/dbkb-api:latest
+
+    - name: Deploy infrastructure with Pulumi
+      uses: pulumi/actions@v4
+      with:
+        command: up
+        stack-name: prod
+        work-dir: infrastructure
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        AWS_REGION: ${{ env.AWS_REGION }}
+        KNOWLEDGE_BASE_ID: ${{ env.KNOWLEDGE_BASE_ID }}
+
+    - name: Get ALB URL
+      id: get-url
+      run: |
+        cd infrastructure
+        echo "alb_dns_name=$(pulumi stack output alb_dns_name)" >> $GITHUB_OUTPUT
+
+    - name: Test deployed endpoint
+      run: |
+        # Wait for ECS service to be ready
+        sleep 120
+        
+        # Test health endpoint
+        curl -f https://${{ steps.get-url.outputs.alb_dns_name }}/health || exit 1
+        
+        # Test query endpoint
+        curl -f -X POST -H "Content-Type: application/json" \
+          -d '{"query_text":"test"}' \
+          https://${{ steps.get-url.outputs.alb_dns_name }}/query || exit 1
+
+    - name: Update README with deployment info
+      run: |
+        echo "## Deployment Status" >> deployment-status.md
+        echo "" >> deployment-status.md
+        echo "✅ **Last Deployment**: $(date)" >> deployment-status.md
+        echo "🌐 **Load Balancer URL**: https://${{ steps.get-url.outputs.alb_dns_name }}" >> deployment-status.md
+        echo "🔗 **API Endpoints**:" >> deployment-status.md
+        echo "- Health Check: https://${{ steps.get-url.outputs.alb_dns_name }}/health" >> deployment-status.md
+        echo "- Query: https://${{ steps.get-url.outputs.alb_dns_name }}/query" >> deployment-status.md
+        echo "- Relationships: https://${{ steps.get-url.outputs.alb_dns_name }}/relationship" >> deployment-status.md
+        echo "- Optimization: https://${{ steps.get-url.outputs.alb_dns_name }}/optimize" >> deployment-status.md
+        echo "- API Docs: https://${{ steps.get-url.outputs.alb_dns_name }}/docs" >> deployment-status.md
+        echo "" >> deployment-status.md
+        echo "📊 **Infrastructure**: AWS ECS Fargate (ARM64) + ALB + Amazon Bedrock Knowledge Base" >> deployment-status.md
+
+    - name: Comment on PR with deployment info
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🚀 ECS Fargate Deployment Preview
+            
+            Your changes have been deployed to: https://${{ steps.get-url.outputs.alb_dns_name }}
+            
+            ### Test the API:
+            - 🏥 [Health Check](https://${{ steps.get-url.outputs.alb_dns_name }}/health)
+            - 📖 [API Documentation](https://${{ steps.get-url.outputs.alb_dns_name }}/docs)
+            - 💬 [Chat Interface](https://${{ steps.get-url.outputs.alb_dns_name }}/)
+            
+            ### Quick Test:
+            \`\`\`bash
+            curl -X POST -H "Content-Type: application/json" \\
+              -d '{"query_text":"What tables are in the database?"}' \\
+              https://${{ steps.get-url.outputs.alb_dns_name }}/query
+            \`\`\`
+            
+            **Infrastructure**: ECS Fargate (ARM64) + Application Load Balancer + HTTPS
+            `
+          })

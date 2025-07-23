@@ -1,0 +1,14 @@
+name: dbkb-infrastructure
+runtime: python
+description: Infrastructure for Database Knowledge Base using AWS App Runner
+
+template:
+  config:
+    aws:region:
+      description: The AWS region to deploy to
+      default: us-east-1
+    knowledge-base-id:
+      description: The Amazon Bedrock Knowledge Base ID
+      default: KRD3MW7QFS
+    
+main: __main__.py

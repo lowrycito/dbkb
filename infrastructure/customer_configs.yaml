@@ -1,0 +1,48 @@
+# Customer Knowledge Base Deployment Configurations
+# Add your customers here to deploy separate API instances
+
+customers:
+  - name: "Acme Corporation"
+    company_code: "ACME001"
+    database_kb_id: "kb-acme-db-001"
+    support_kb_id: "kb-acme-support-001"
+    product_kb_id: "kb-acme-product-001"
+    subdomain: "acme"
+    industry: "Manufacturing"
+    
+  - name: "TechStart Inc"
+    company_code: "TECH002"
+    database_kb_id: "kb-techstart-db-002"
+    support_kb_id: "kb-techstart-support-002"
+    # product_kb_id: null  # Optional - not all customers need all KBs
+    subdomain: "techstart"
+    industry: "Technology"
+    
+  - name: "Retail Plus"
+    company_code: "RETAIL003"
+    database_kb_id: "kb-retail-db-003"
+    # support_kb_id: null
+    product_kb_id: "kb-retail-product-003"
+    subdomain: "retail"
+    industry: "Retail"
+
+# Default configuration for all deployments
+defaults:
+  cpu: "256"
+  memory: "512"
+  desired_count: 1
+  log_retention_days: 30
+  health_check_path: "/health"
+  
+# Domain configuration
+domain:
+  base_domain: "your-domain.com"
+  certificate_arn: "arn:aws:acm:us-east-1:836255806547:certificate/9eb0536b-380c-4ebb-8ce6-a33f88df0b0d"
+
+# Shared infrastructure settings
+shared:
+  vpc_id: "default"  # Will use default VPC
+  database_security_group: "sg-94cf59e9"
+  ecs_cluster_name: "dbkb-cluster"
+  ecr_repository_name: "dbkb-api"
+  alb_name: "dbkb-alb"

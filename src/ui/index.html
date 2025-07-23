@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Knowledge Assistant</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f6f8fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #24292e;
+            margin: 0;
+        }
+
+        .header p {
+            color: #586069;
+            margin: 8px 0;
+        }
+
+        .assistant-container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status {
+            padding: 12px 16px;
+            background-color: #f1f8ff;
+            border-bottom: 1px solid #c8e1ff;
+            font-size: 14px;
+            color: #0366d6;
+        }
+
+        .api-config {
+            padding: 16px;
+            background-color: #fff8dc;
+            border-bottom: 1px solid #e1c16e;
+            display: none;
+        }
+
+        .api-config.show {
+            display: block;
+        }
+
+        .api-config input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .api-config button {
+            margin-top: 8px;
+            padding: 8px 16px;
+            background-color: #0366d6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        db-knowledge-assistant {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            color: #586069;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 8px;
+            padding: 20px;
+            color: #742a2a;
+        }
+
+        .error-container h2 {
+            color: #742a2a;
+            margin-top: 0;
+        }
+
+        .parameter-list {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+        }
+
+        .user-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .user-info strong {
+            color: #0369a1;
+        }
+
+        .kb-selector {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .kb-selector label {
+            font-weight: 500;
+            color: #374151;
+            margin-right: 8px;
+        }
+
+        .kb-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .kb-option:hover {
+            border-color: #0366d6;
+            background: #f0f9ff;
+        }
+
+        .kb-option.active {
+            border-color: #0366d6;
+            background: #dbeafe;
+            color: #0366d6;
+        }
+
+        .kb-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .kb-info {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .source-indicator {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .source-database {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .source-support {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .source-documentation {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .example-queries {
+            margin: 20px auto;
+            max-width: 1200px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-queries h3 {
+            margin-top: 0;
+            color: #24292e;
+        }
+
+        .query-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .query-example {
+            padding: 12px 16px;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            border-left: 3px solid #0366d6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .query-example:hover {
+            background-color: #e1f5fe;
+        }
+
+        .query-example strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #24292e;
+        }
+
+        .query-example span {
+            color: #586069;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Database Knowledge Assistant</h1>
+        <p id="headerDescription">Get intelligent answers about database schema, relationships, and query optimization</p>
+    </div>
+
+    <div class="user-info" id="userInfo" style="display: none;">
+        <strong>User:</strong> <span id="userDisplay"></span> |
+        <strong>Company:</strong> <span id="companyDisplay"></span> |
+        <strong>Industry:</strong> <span id="industryDisplay"></span>
+    </div>
+
+    <div class="kb-selector" id="kbSelector" style="display: none;">
+        <label>Query Mode:</label>
+        
+        <div class="kb-option active" onclick="selectQueryMode('smart')">
+            <input type="radio" name="queryMode" value="smart" checked>
+            <span>🔍 Smart Search</span>
+        </div>
+        
+        <div class="kb-option" onclick="selectQueryMode('database')">
+            <input type="radio" name="queryMode" value="database">
+            <span>📊 Database Schema</span>
+        </div>
+        
+        <div class="kb-option" id="supportOption" onclick="selectQueryMode('support')">
+            <input type="radio" name="queryMode" value="support">
+            <span>🎫 Support History</span>
+        </div>
+        
+        <div class="kb-option" id="documentationOption" onclick="selectQueryMode('documentation')">
+            <input type="radio" name="queryMode" value="documentation">
+            <span>📚 Documentation</span>
+        </div>
+        
+        <div class="kb-info" id="kbInfo">
+            Automatically routes queries to the most relevant knowledge base
+        </div>
+    </div>
+
+    <div class="status" id="status">
+        Initializing Database Knowledge Assistant...
+    </div>
+
+    <div class="api-config" id="apiConfig">
+        <strong>Configure API Endpoint:</strong>
+        <input type="text" id="apiEndpointInput" placeholder="https://your-app-runner-url.com" />
+        <button onclick="setApiEndpoint()">Set Endpoint</button>
+    </div>
+
+    <div class="assistant-container" id="assistantContainer">
+        <db-knowledge-assistant id="assistant"></db-knowledge-assistant>
+    </div>
+
+    <div class="error-container" id="errorContainer" style="display: none;">
+        <h2>Missing Required Parameters</h2>
+        <p>This application requires the following query string parameters to function properly:</p>
+        <div class="parameter-list">
+            <strong>Required Parameters:</strong><br>
+            • DatabaseKnowledgeBaseId - The Amazon Bedrock Knowledge Base ID for database schema<br>
+            • DatabaseHost - The database host server<br>
+            • DatabaseSchema - The database schema name<br>
+            • Company - Company code/identifier<br>
+            • CompanyName - Full company name<br>
+            • Industry - Company industry<br>
+            • LoginId - User login identifier<br>
+            • FirstName - User's first name<br>
+            • LastName - User's last name<br>
+            • Email - User's email address<br><br>
+            <strong>Optional Parameters:</strong><br>
+            • SupportKnowledgeBaseId - Knowledge Base ID for support ticket history<br>
+            • ProductKnowledgeBaseId - Knowledge Base ID for product documentation
+        </div>
+        <p><strong>Example URL:</strong></p>
+        <div class="parameter-list">
+            https://your-domain.com/?DatabaseKnowledgeBaseId=kb-db-123&SupportKnowledgeBaseId=kb-support-456&DatabaseHost=db.example.com&DatabaseSchema=myschema&Company=ACME001&CompanyName=Acme%20Corp&Industry=Manufacturing&LoginId=jsmith&FirstName=John&LastName=Smith&Email=john@acme.com
+        </div>
+    </div>
+
+    <div class="example-queries">
+        <h3>Example Queries</h3>
+        <div class="query-examples">
+            <div class="query-example" onclick="sendExampleQuery('What tables are in the database?')">
+                <strong>Schema Overview</strong>
+                <span>What tables are in the database?</span>
+            </div>
+            <div class="query-example" onclick="sendExampleQuery('Show me the relationships for the users table')">
+                <strong>Table Relationships</strong>
+                <span>Show me the relationships for the users table</span>
+            </div>
+            <div class="query-example" onclick="sendExampleQuery('How can I optimize this query: SELECT * FROM orders WHERE created_at > ?')">
+                <strong>Query Optimization</strong>
+                <span>How can I optimize this query: SELECT * FROM orders WHERE created_at > ?</span>
+            </div>
+            <div class="query-example" onclick="sendExampleQuery('What indexes exist on the products table?')">
+                <strong>Index Information</strong>
+                <span>What indexes exist on the products table?</span>
+            </div>
+            <div class="query-example" onclick="sendExampleQuery('Show me common query patterns for reporting')">
+                <strong>Query Patterns</strong>
+                <span>Show me common query patterns for reporting</span>
+            </div>
+            <div class="query-example" onclick="sendExampleQuery('Explain the foreign key relationships between orders and customers')">
+                <strong>Relationship Analysis</strong>
+                <span>Explain the foreign key relationships between orders and customers</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>
+            Powered by <a href="https://aws.amazon.com/bedrock/">Amazon Bedrock</a> and 
+            <a href="https://aws.amazon.com/apprunner/">AWS App Runner</a>
+        </p>
+        <p>
+            <a href="/docs">API Documentation</a> | 
+            <a href="/health">Health Check</a>
+        </p>
+    </div>
+
+    <script src="db-knowledge-assistant.js"></script>
+    <script>
+        const assistant = document.getElementById('assistant');
+        const status = document.getElementById('status');
+        const apiConfig = document.getElementById('apiConfig');
+        const assistantContainer = document.getElementById('assistantContainer');
+        const errorContainer = document.getElementById('errorContainer');
+        const userInfo = document.getElementById('userInfo');
+
+        // Parse and validate required URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const requiredParams = [
+            'Application', 'DatabaseHost', 'DatabaseSchema', 'Company', 
+            'CompanyName', 'Industry', 'LoginId', 'FirstName', 'LastName', 'Email'
+        ];
+        
+        // No optional parameters needed - KB IDs are looked up from Application
+
+        let userContext = {};
+        let missingParams = [];
+
+        // Check for all required parameters
+        requiredParams.forEach(param => {
+            const value = urlParams.get(param);
+            if (!value || value.trim() === '') {
+                missingParams.push(param);
+            } else {
+                userContext[param] = value.trim();
+            }
+        });
+        
+        // Map Application to lowercase for backend compatibility
+        if (userContext.Application) {
+            userContext.application = userContext.Application.toLowerCase();
+        }
+
+        // If any parameters are missing, show error and hide assistant
+        if (missingParams.length > 0) {
+            assistantContainer.style.display = 'none';
+            errorContainer.style.display = 'block';
+            status.textContent = `Missing required parameters: ${missingParams.join(', ')}`;
+            status.style.backgroundColor = '#fed7d7';
+            status.style.color = '#742a2a';
+        } else {
+            // All parameters present - show user info and continue
+            document.getElementById('userDisplay').textContent = `${userContext.FirstName} ${userContext.LastName} (${userContext.LoginId})`;
+            document.getElementById('companyDisplay').textContent = userContext.CompanyName;
+            document.getElementById('industryDisplay').textContent = userContext.Industry;
+            document.getElementById('headerDescription').textContent = `Get intelligent answers about ${userContext.CompanyName}'s ${userContext.Application.toUpperCase()} system - database, support history, and documentation`;
+            userInfo.style.display = 'block';
+
+            // Show knowledge base selector and configure available options
+            const kbSelector = document.getElementById('kbSelector');
+            // Show all KB options - availability will be determined by the application
+            const supportOption = document.getElementById('supportOption');
+            const documentationOption = document.getElementById('documentationOption');
+            
+            // All options are shown since KB availability is determined by the application
+            supportOption.style.display = 'flex';
+            documentationOption.style.display = 'flex';
+            
+            kbSelector.style.display = 'flex';
+
+            // Make user context available globally for the assistant
+            window.userContext = userContext;
+            window.selectedQueryMode = 'smart';
+
+            // Try to auto-detect API endpoint
+            let apiEndpoint = window.location.origin;
+            
+            // If we're running locally or in development, show the config
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                apiConfig.classList.add('show');
+                status.textContent = 'Please configure your API endpoint below.';
+                status.style.backgroundColor = '#fff8dc';
+                status.style.color = '#b08800';
+            } else {
+                // Production mode - use current origin as API endpoint
+                assistant.setApiEndpoint(apiEndpoint);
+                status.textContent = `Connected to API: ${apiEndpoint}`;
+                status.style.backgroundColor = '#d4edda';
+                status.style.color = '#155724';
+            }
+
+            function setApiEndpoint() {
+                const input = document.getElementById('apiEndpointInput');
+                const endpoint = input.value.trim();
+                
+                if (endpoint) {
+                    assistant.setApiEndpoint(endpoint);
+                    apiConfig.classList.remove('show');
+                    status.textContent = `Connected to API: ${endpoint}`;
+                    status.style.backgroundColor = '#d4edda';
+                    status.style.color = '#155724';
+                }
+            }
+
+            function selectQueryMode(mode) {
+                // Update selected mode
+                window.selectedQueryMode = mode;
+                
+                // Update UI
+                document.querySelectorAll('.kb-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                
+                event.currentTarget.classList.add('active');
+                
+                // Update radio button
+                document.querySelector(`input[value="${mode}"]`).checked = true;
+                
+                // Update info text
+                const kbInfo = document.getElementById('kbInfo');
+                const infoTexts = {
+                    'smart': 'Automatically routes queries to the most relevant knowledge base',
+                    'database': 'Search only database schema and query patterns',
+                    'support': 'Search only support ticket history and solutions',
+                    'product': 'Search only product documentation and guides'
+                };
+                
+                kbInfo.textContent = infoTexts[mode];
+                
+                // Notify the assistant of the mode change
+                if (assistant.setQueryMode) {
+                    assistant.setQueryMode(mode);
+                }
+            }
+
+            function sendExampleQuery(query) {
+                // Set the query in the assistant's input field
+                const inputField = assistant.shadowRoot.querySelector('.message-input');
+                inputField.value = query;
+                
+                // Trigger the input event to enable the send button
+                inputField.dispatchEvent(new Event('input'));
+                
+                // Send the message
+                assistant.sendMessage();
+                
+                // Scroll to the assistant
+                assistant.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // Allow Enter key to set API endpoint
+            document.getElementById('apiEndpointInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    setApiEndpoint();
+                }
+            });
+        
+        } // End of else block for parameter validation
+    </script>
+</body>
+</html>
