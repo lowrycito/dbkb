@@ -1,6 +1,6 @@
 name: dbkb-infrastructure
 runtime: python
-description: Infrastructure for Database Knowledge Base using AWS App Runner
+description: Infrastructure for Database Knowledge Base using AWS ECS Fargate
 
 template:
   config:

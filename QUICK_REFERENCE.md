@@ -36,7 +36,7 @@ curl -k -X POST "https://dbkb-alb-493056638.us-east-1.elb.amazonaws.com/query" \
 | **ECS Cluster** | `dbkb-cluster` |
 | **ECS Service** | `dbkb-service` |
 | **ECR Repository** | `836255806547.dkr.ecr.us-east-1.amazonaws.com/dbkb-api` |
-| **IAM Task Role** | `dbkb-app-runner-role-5e37961` |
+| **IAM Task Role** | `dbkb-ecs-task-role` |
 | **IAM Policy** | `dbkb-bedrock-policy-5c5c903` (v6) |
 
 ## 🛠️ Common Commands
