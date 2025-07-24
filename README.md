@@ -1,5 +1,7 @@
 # Database Knowledge Base (DBKB)
 
+<!-- Verification test comment added by Devin -->
+
 An intelligent knowledge base system for database schema documentation and query analysis using Amazon Bedrock with advanced RAG techniques.
 
 ## Overview
