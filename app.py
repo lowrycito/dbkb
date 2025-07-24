@@ -670,6 +670,7 @@ async def serve_js():
         raise HTTPException(status_code=404, detail="JavaScript file not found")
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/ui/", response_class=HTMLResponse)
 async def serve_ui():
     """Serve the main UI page"""
     try:
