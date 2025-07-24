@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import logging
 import boto3
@@ -93,23 +94,23 @@ class AdvancedRetrieval:
         # Combine contexts for analysis
         combined_contexts = "\n\n---\n\n".join(context_texts[:5])  # Use top 5 contexts
 
-        prompt = f"""You are a database expert assistant. Based on the retrieved documentation below, provide a comprehensive and helpful answer to the user's query.
+        prompt = f"""You are a SQL query assistant. Based on the retrieved database documentation below, provide ONLY SQL statements that answer the user's query.
 
 USER QUERY: {query_text}
 
 RETRIEVED DOCUMENTATION:
 {combined_contexts}
 
-Please provide a clear, accurate, and helpful response that:
-1. Directly addresses the user's question
-2. Uses information from the retrieved documentation
-3. Is well-structured and easy to understand
-4. Provides specific details (table names, column names, relationships, etc.) when available
-5. If the query is about tables, list them clearly
-6. If the query is about relationships, explain them in a structured way
-7. If the documentation is incomplete for the query, mention what information is available and what might be missing
+IMPORTANT INSTRUCTIONS:
+1. Respond ONLY with SQL statements - no explanatory text
+2. Use proper SQL syntax for the database system
+3. Include table aliases for readability
+4. Add appropriate WHERE clauses for filtering
+5. Use meaningful column names in SELECT statements
+6. If multiple queries are needed, separate them with semicolons
+7. If the query cannot be answered with available schema information, respond with: "-- Insufficient schema information to generate SQL"
 
-Do not simply repeat the documentation - synthesize it into a helpful answer."""
+SQL Response:"""
 
         try:
             response = self.bedrock_client.invoke_model(
@@ -780,9 +781,9 @@ If the information is not available in the provided documentation, clearly indic
         context_texts = [ctx['content'] for ctx in contexts if ctx['content']]
         context_combined = "\n\n---\n\n".join(context_texts)
 
-        prompt = f"""I need you to analyze and optimize the following SQL query based on the database schema information provided.
+        prompt = f"""Analyze and optimize this SQL query. Respond with ONLY the optimized SQL and brief performance comments.
 
-SQL QUERY:
+ORIGINAL SQL:
 ```sql
 {sql_query}
 ```
@@ -790,23 +791,12 @@ SQL QUERY:
 SCHEMA INFORMATION:
 {context_combined}
 
-Please provide:
+Provide:
+1. Optimized SQL query with performance improvements
+2. Brief comments (-- format) explaining key optimizations
+3. Index recommendations as SQL comments
 
-1. A comprehensive analysis of the query:
-   - Tables and columns involved
-   - Joins and their efficiency
-   - Where clauses and potential index usage
-   - Any other operations (GROUP BY, ORDER BY, etc.)
-
-2. Performance optimization recommendations:
-   - Index recommendations
-   - Query structure improvements
-   - Alternative approaches if applicable
-   - Explain what would make this query more efficient and why
-
-3. An optimized version of the query with comments explaining key changes
-
-Format your response with proper markdown, using headings, code blocks, and bullet points for clarity. Focus on practical, specific recommendations based on the provided schema information."""
+OPTIMIZED SQL:"""
 
         try:
             response = self.bedrock_client.invoke_model(
