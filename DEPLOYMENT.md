@@ -201,7 +201,7 @@ echo "✅ Deployment completed successfully!"
 
 ### IAM Roles and Policies
 
-**Task Role**: `dbkb-app-runner-role-5e37961`
+**Task Role**: `dbkb-ecs-task-role`
 - Policy: `dbkb-bedrock-policy-5c5c903` (current version: v6)
 - Permissions: Bedrock model invocation, Knowledge Base access, S3, CloudWatch Logs
 

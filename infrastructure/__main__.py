@@ -30,8 +30,8 @@ ecr_repository = aws.ecr.Repository(
 )
 
 # Create IAM role for ECS Tasks (with Bedrock permissions)
-app_runner_role = aws.iam.Role(
-    "dbkb-app-runner-role",
+ecs_task_role = aws.iam.Role(
+    "dbkb-ecs-task-role",
     assume_role_policy="""{
         "Version": "2012-10-17",
         "Statement": [
@@ -118,33 +118,10 @@ bedrock_policy = aws.iam.Policy(
 # Attach the policy to the role
 policy_attachment = aws.iam.RolePolicyAttachment(
     "dbkb-policy-attachment",
-    role=app_runner_role.name,
+    role=ecs_task_role.name,
     policy_arn=bedrock_policy.arn
 )
 
-# Create IAM role for App Runner service (for accessing ECR)
-app_runner_access_role = aws.iam.Role(
-    "dbkb-app-runner-access-role",
-    assume_role_policy="""{
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "Service": "build.apprunner.amazonaws.com"
-                },
-                "Action": "sts:AssumeRole"
-            }
-        ]
-    }""",
-    managed_policy_arns=[
-        "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
-    ],
-    tags={
-        "Project": "DBKB",
-        "Environment": "production"
-    }
-)
 
 # Get current AWS account ID for ECR image URI
 current_identity = aws.get_caller_identity()
@@ -374,7 +351,7 @@ task_definition = aws.ecs.TaskDefinition(
         operating_system_family="LINUX"
     ),
     execution_role_arn=task_execution_role.arn,
-    task_role_arn=app_runner_role.arn,  # Reuse the existing role with Bedrock permissions
+    task_role_arn=ecs_task_role.arn,  # Reuse the existing role with Bedrock permissions
     container_definitions=pulumi.Output.all(
         ecr_repository.repository_url,
         knowledge_base_id,
@@ -455,7 +432,7 @@ pulumi.export("ecs_cluster_name", ecs_cluster.name)
 pulumi.export("ecs_security_group_id", ecs_security_group.id)
 pulumi.export("alb_dns_name", alb.dns_name)
 pulumi.export("alb_hosted_zone_id", alb.zone_id)
-pulumi.export("task_role_arn", app_runner_role.arn)
+pulumi.export("task_role_arn", ecs_task_role.arn)
 pulumi.export("task_execution_role_arn", task_execution_role.arn)
 
 # Export configuration

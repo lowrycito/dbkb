@@ -30,11 +30,11 @@ RUN mkdir -p /app/logs && \
 # Switch to non-root user
 USER appuser
 
-# Expose port (App Runner will map this)
+# Expose port (ECS Fargate will map this)
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+# Health check optimized for ECS Fargate
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Set environment variables
