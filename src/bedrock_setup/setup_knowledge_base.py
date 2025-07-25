@@ -5,6 +5,10 @@ import json
 import time
 from botocore.exceptions import ClientError
 
+PARENT_CHUNK_MAX_TOKENS = 4000  # Complete table definitions with relationships
+CHILD_CHUNK_MAX_TOKENS = 800    # Specific queries and column details  
+CHUNK_OVERLAP_TOKENS = 150      # Maintain foreign key relationships across chunks
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -105,11 +109,17 @@ class BedrockKnowledgeBaseSetup:
                 },
                 vectorIngestionConfiguration={
                     "chunkingConfiguration": {
-                        "chunkingStrategy": "SEMANTIC",
-                        "semanticChunkingConfiguration": {
-                            "bufferSize": 100,
-                            "breakpointPercentileThreshold": 95,
-                            "maxTokens": 600
+                        "chunkingStrategy": "HIERARCHICAL",
+                        "hierarchicalChunkingConfiguration": {
+                            "levelConfigurations": [
+                                {
+                                    "maxTokens": PARENT_CHUNK_MAX_TOKENS
+                                },
+                                {
+                                    "maxTokens": CHILD_CHUNK_MAX_TOKENS
+                                }
+                            ],
+                            "overlapTokens": CHUNK_OVERLAP_TOKENS
                         }
                     }
                 }

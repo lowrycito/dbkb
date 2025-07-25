@@ -65,7 +65,7 @@ class SchemaMarkdownGenerator:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write("# Database Schema Documentation\n\n")
             f.write("This documentation describes the database schema extracted on ")
-            f.write(time.strftime('%Y-%m-%d', logging.Formatter().converter()) + "\n\n")
+            f.write(time.strftime('%Y-%m-%d') + "\n\n")
 
             f.write("## Contents\n\n")
             f.write("- [Tables Summary](tables/tables_summary.md)\n")
@@ -116,7 +116,8 @@ class SchemaMarkdownGenerator:
         output_path = os.path.join(self.tables_dir, f"{table_name}.md")
 
         with open(output_path, 'w', encoding='utf-8') as f:
-            # Table header
+            # Table header with semantic marker
+            f.write(f"[TABLE: {table_name}]\n")
             f.write(f"# Table: {table_name}\n\n")
 
             # Description
@@ -218,11 +219,13 @@ class SchemaMarkdownGenerator:
                     column = fk.get('column', '')
 
                     f.write(f"### Join with {ref_table}\n\n")
+                    f.write("[QUERY_EXAMPLE]\n")
                     f.write("```sql\n")
                     f.write("SELECT t1.*, t2.*\n")
                     f.write(f"FROM {table_name} t1\n")
                     f.write(f"JOIN {ref_table} t2 ON t1.{column} = t2.{ref_column}\n")
-                    f.write("```\n\n")
+                    f.write("```\n")
+                    f.write("[/QUERY_EXAMPLE]\n\n")
 
             # Add joins with tables referencing this table
             if table_data.get('referenced_by'):
@@ -234,11 +237,15 @@ class SchemaMarkdownGenerator:
                         pk_column = table_data['primary_key'][0]  # Use first PK column for example
 
                         f.write(f"### Join with {ref_table} (referencing)\n\n")
+                        f.write("[QUERY_EXAMPLE]\n")
                         f.write("```sql\n")
                         f.write("SELECT t1.*, t2.*\n")
                         f.write(f"FROM {table_name} t1\n")
                         f.write(f"JOIN {ref_table} t2 ON t1.{pk_column} = t2.{ref_column}\n")
-                        f.write("```\n\n")
+                        f.write("```\n")
+                        f.write("[/QUERY_EXAMPLE]\n\n")
+
+            f.write(f"[/TABLE: {table_name}]\n")
 
         logger.info("Table documentation generated at %s", output_path)
 
