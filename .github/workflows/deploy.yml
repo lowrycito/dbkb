@@ -77,11 +77,11 @@ jobs:
 
     - name: Build and push Docker image
       run: |
+        # Get AWS account ID first
+        export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        
         # Login to ECR
         aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-        
-        # Get AWS account ID
-        export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
         
         # Build ARM64 image
         docker buildx build --platform linux/arm64 -t dbkb-api:arm64 .
