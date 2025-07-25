@@ -45,11 +45,22 @@ class DBKnowledgeAssistant extends HTMLElement {
           display: block;
           height: 100%;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          --primary-color: #0366d6;
-          --secondary-color: #f6f8fa;
-          --border-color: #e1e4e8;
-          --assistant-bg: #f1f8ff;
+          --primary-color: #667eea;
+          --primary-hover: #5a67d8;
+          --secondary-color: #f7fafc;
+          --border-color: #e2e8f0;
+          --assistant-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           --user-bg: #ffffff;
+          --text-primary: #2d3748;
+          --text-secondary: #718096;
+          --success-color: #48bb78;
+          --warning-color: #ed8936;
+          --error-color: #f56565;
+          --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+          --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+          --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+          --border-radius: 12px;
+          --border-radius-sm: 8px;
         }
 
         .container {
@@ -58,6 +69,47 @@ class DBKnowledgeAssistant extends HTMLElement {
           height: 100%;
           max-width: 1200px;
           margin: 0 auto;
+          background: white;
+          border-radius: var(--border-radius);
+          box-shadow: var(--shadow-lg);
+          overflow: hidden;
+        }
+
+        .chat-header {
+          background: var(--assistant-bg);
+          color: white;
+          padding: 16px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .chat-header h3 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+        }
+
+        .chat-status {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          opacity: 0.9;
+        }
+
+        .status-indicator {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--success-color);
+          animation: pulse-status 2s infinite;
+        }
+
+        @keyframes pulse-status {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
 
         .chat-container {
@@ -67,32 +119,52 @@ class DBKnowledgeAssistant extends HTMLElement {
           display: flex;
           flex-direction: column;
           gap: 16px;
+          background: #fafafa;
+          scroll-behavior: smooth;
         }
 
         .message {
           max-width: 85%;
-          padding: 12px 16px;
-          border-radius: 8px;
-          line-height: 1.5;
+          padding: 16px 20px;
+          border-radius: var(--border-radius);
+          line-height: 1.6;
           position: relative;
+          box-shadow: var(--shadow-sm);
+          animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .message.assistant {
           align-self: flex-start;
-          background-color: var(--assistant-bg);
-          border: 1px solid #d1e5f9;
+          background: white;
+          border: 1px solid var(--border-color);
+          border-left: 4px solid var(--primary-color);
         }
 
         .message.user {
           align-self: flex-end;
-          background-color: var(--user-bg);
-          border: 1px solid var(--border-color);
+          background: var(--primary-color);
+          color: white;
+          border-radius: var(--border-radius) var(--border-radius) 4px var(--border-radius);
         }
 
         .sender {
-          font-weight: bold;
-          margin-bottom: 4px;
+          font-weight: 600;
+          margin-bottom: 8px;
           font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .message.assistant .sender {
@@ -100,93 +172,140 @@ class DBKnowledgeAssistant extends HTMLElement {
         }
 
         .message.user .sender {
-          color: #24292e;
+          color: rgba(255, 255, 255, 0.9);
+        }
+
+        .sender::before {
+          content: '🤖';
+          font-size: 16px;
+        }
+
+        .message.user .sender::before {
+          content: '👤';
         }
 
         .message-content {
           white-space: pre-wrap;
+          word-wrap: break-word;
         }
 
         .message-content code {
           font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-          background-color: rgba(0, 0, 0, 0.05);
-          padding: 2px 4px;
-          border-radius: 3px;
+          background-color: rgba(0, 0, 0, 0.08);
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 13px;
+        }
+
+        .message.user .message-content code {
+          background-color: rgba(255, 255, 255, 0.2);
         }
 
         .message-content pre {
           background-color: rgba(0, 0, 0, 0.05);
-          padding: 12px;
-          border-radius: 6px;
+          padding: 16px;
+          border-radius: var(--border-radius-sm);
           overflow-x: auto;
-          margin: 10px 0;
+          margin: 12px 0;
+          border-left: 3px solid var(--primary-color);
         }
 
         .input-container {
           display: flex;
-          padding: 16px;
+          padding: 20px;
           border-top: 1px solid var(--border-color);
-          background-color: white;
+          background: white;
+          gap: 12px;
+          align-items: flex-end;
         }
 
         .message-input {
           flex: 1;
-          border: 1px solid var(--border-color);
-          border-radius: 8px;
-          padding: 12px 16px;
-          font-size: 14px;
-          line-height: 20px;
+          border: 2px solid var(--border-color);
+          border-radius: var(--border-radius);
+          padding: 16px 20px;
+          font-size: 16px;
+          line-height: 1.5;
           resize: none;
           outline: none;
-          max-height: 200px;
+          max-height: 120px;
           overflow-y: auto;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          font-family: inherit;
         }
 
         .message-input:focus {
           border-color: var(--primary-color);
-          box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.1);
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .message-input::placeholder {
+          color: var(--text-secondary);
         }
 
         .send-button {
-          margin-left: 12px;
-          padding: 10px 14px;
-          background-color: var(--primary-color);
+          padding: 16px 20px;
+          background: var(--primary-color);
           color: white;
           border: none;
-          border-radius: 8px;
+          border-radius: var(--border-radius);
           cursor: pointer;
-          font-weight: 500;
+          font-weight: 600;
+          font-size: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: background-color 0.2s;
-          align-self: flex-end;
+          gap: 8px;
+          transition: all 0.2s;
+          min-width: 100px;
+          box-shadow: var(--shadow-sm);
         }
 
-        .send-button:hover {
-          background-color: #0855a4;
+        .send-button:hover:not(:disabled) {
+          background: var(--primary-hover);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
+
+        .send-button:active:not(:disabled) {
+          transform: translateY(0);
         }
 
         .send-button:disabled {
-          background-color: #95c0ee;
+          background: #cbd5e0;
           cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+
+        .send-button::before {
+          content: '✈️';
+          font-size: 16px;
         }
 
         .thinking {
           display: flex;
-          gap: 4px;
-          padding: 8px 12px;
-          background-color: var(--assistant-bg);
-          border-radius: 8px;
+          gap: 8px;
+          padding: 16px 20px;
+          background: white;
+          border: 1px solid var(--border-color);
+          border-left: 4px solid var(--warning-color);
+          border-radius: var(--border-radius);
           align-self: flex-start;
           font-style: italic;
-          color: #444;
+          color: var(--text-secondary);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .thinking::before {
+          content: '🤔';
+          font-size: 16px;
         }
 
         .dot {
           width: 8px;
           height: 8px;
-          background-color: #888;
+          background-color: var(--primary-color);
           border-radius: 50%;
           animation: pulse 1.5s infinite;
         }
@@ -205,26 +324,34 @@ class DBKnowledgeAssistant extends HTMLElement {
         }
 
         .support-actions {
-          padding: 10px;
+          padding: 16px 20px;
           border-top: 1px solid var(--border-color);
           display: flex;
-          gap: 10px;
+          gap: 12px;
           justify-content: center;
+          background: var(--secondary-color);
         }
         
         .support-btn {
-          padding: 8px 16px;
-          border: 1px solid var(--primary-color);
+          padding: 12px 20px;
+          border: 2px solid var(--primary-color);
           background: white;
           color: var(--primary-color);
-          border-radius: 4px;
+          border-radius: var(--border-radius-sm);
           cursor: pointer;
           font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
         
         .support-btn:hover {
           background: var(--primary-color);
           color: white;
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-sm);
         }
         
         .support-history {
@@ -326,11 +453,18 @@ class DBKnowledgeAssistant extends HTMLElement {
       </style>
 
       <div class="container">
+        <div class="chat-header">
+          <h3>Database Knowledge Assistant</h3>
+          <div class="chat-status">
+            <div class="status-indicator"></div>
+            <span>Online</span>
+          </div>
+        </div>
         <div class="chat-container" id="chatContainer"></div>
         <div class="input-container">
           <textarea
             class="message-input"
-            placeholder="Type your query about the database schema or SQL..."
+            placeholder="Ask me about your database schema, SQL queries, or get support..."
             rows="1"
           ></textarea>
           <button class="send-button" disabled>Send</button>

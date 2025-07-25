@@ -607,7 +607,7 @@ async def multi_kb_query(request: QueryRequest):
                     secondary_info = "\n\n**Related Information:**\n"
                     for secondary in secondary_results:
                         source_name = secondary['source_type'].title()
-                        secondary_info += f"\n*From {source_name}:* {secondary['answer'][:200]}..."
+                        secondary_info += f"\n*From {source_name}:* {secondary['answer'][:1000]}..."
                     
                     primary_result['answer'] += secondary_info
             else:
@@ -979,6 +979,15 @@ async def health_check():
             "version": "2.0.0", 
             "note": "simplified_health_check"
         }
+
+@app.get('/test', response_class=HTMLResponse)
+async def test_page():
+    """Serve the test page for parameter configuration"""
+    try:
+        with open('src/ui/test.html', 'r') as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="Test page not found", status_code=404)
 
 @app.post("/query", response_model=APIResponse)
 async def query_knowledge_base(request: QueryRequest):
