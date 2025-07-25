@@ -980,6 +980,15 @@ async def health_check():
             "note": "simplified_health_check"
         }
 
+@app.get('/test', response_class=HTMLResponse)
+async def test_page():
+    """Serve the test page for parameter configuration"""
+    try:
+        with open('src/ui/test.html', 'r') as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="Test page not found", status_code=404)
+
 @app.post("/query", response_model=APIResponse)
 async def query_knowledge_base(request: QueryRequest):
     """General database knowledge base queries with multi-KB support"""
