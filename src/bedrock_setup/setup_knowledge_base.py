@@ -24,6 +24,62 @@ class BedrockKnowledgeBaseSetup:
         self.bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime', region_name=region_name)
         self.region = region_name
 
+    def create_opensearch_collection(self, collection_name):
+        """Create OpenSearch Serverless collection for the knowledge base"""
+        try:
+            aoss_client = boto3.client('opensearchserverless', region_name=self.region)
+            
+            response = aoss_client.create_collection(
+                name=collection_name,
+                type='VECTORSEARCH',
+                description=f'Vector collection for knowledge base {collection_name}'
+            )
+            
+            collection_arn = response['createCollectionDetail']['arn']
+            logger.info(f"Created OpenSearch collection: {collection_arn}")
+            
+            # Wait for collection to be active
+            logger.info("Waiting for collection to be active...")
+            waiter_delay = 10
+            waiter_max_attempts = 60
+            
+            for attempt in range(waiter_max_attempts):
+                collection_response = aoss_client.batch_get_collection(
+                    names=[collection_name]
+                )
+                if collection_response['collectionDetails']:
+                    status = collection_response['collectionDetails'][0]['status']
+                    if status == 'ACTIVE':
+                        logger.info("Collection is active")
+                        break
+                    elif status in ['CREATING']:
+                        logger.info(f"Collection status: {status}, waiting...")
+                        time.sleep(waiter_delay)
+                    else:
+                        logger.error(f"Unexpected collection status: {status}")
+                        return None
+                else:
+                    logger.info("Collection not found yet, waiting...")
+                    time.sleep(waiter_delay)
+            
+            return collection_arn
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ConflictException':
+                logger.info(f"Collection {collection_name} already exists, retrieving ARN...")
+                try:
+                    aoss_client = boto3.client('opensearchserverless', region_name=self.region)
+                    response = aoss_client.batch_get_collection(names=[collection_name])
+                    if response['collectionDetails']:
+                        collection_arn = response['collectionDetails'][0]['arn']
+                        logger.info(f"Using existing collection: {collection_arn}")
+                        return collection_arn
+                except Exception as get_error:
+                    logger.error(f"Error retrieving existing collection: {get_error}")
+                    return None
+            else:
+                logger.error(f"Error creating OpenSearch collection: {e}")
+                return None
+
     def create_knowledge_base(self, kb_name, kb_description, embedding_model_arn=None):
         """Create a new knowledge base
 
@@ -43,7 +99,13 @@ class BedrockKnowledgeBaseSetup:
             # Here we assume a role already exists
             role_arn = f"arn:aws:iam::836255806547:role/service-role/AmazonBedrockExecutionRoleForKnowledgeBase"
 
-            # Create the knowledge base
+            collection_name = kb_name.lower().replace('-', '')[:32]
+            collection_arn = self.create_opensearch_collection(collection_name)
+            if not collection_arn:
+                logger.error("Failed to create or retrieve OpenSearch collection")
+                return None
+
+            # Create the knowledge base with proper storage configuration
             response = self.bedrock_agent_client.create_knowledge_base(
                 name=kb_name,
                 description=kb_description,
@@ -57,7 +119,7 @@ class BedrockKnowledgeBaseSetup:
                 storageConfiguration={
                     "type": "OPENSEARCH_SERVERLESS",
                     "opensearchServerlessConfiguration": {
-                        "collectionArn": f"arn:aws:aoss:{self.region}:836255806547:collection/{kb_name.lower().replace('-', '')[:32]}",
+                        "collectionArn": collection_arn,
                         "vectorIndexName": f"{kb_name.lower().replace('-', '_')}_index",
                         "fieldMapping": {
                             "vectorField": "vector",
