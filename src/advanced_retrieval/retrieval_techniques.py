@@ -94,7 +94,7 @@ class AdvancedRetrieval:
         corrections_context = self.get_relevant_corrections(query_text)
         
         # Combine contexts for analysis
-        combined_contexts = "\n\n---\n\n".join(context_texts[:5])  # Use top 5 contexts
+        combined_contexts = "\n\n---\n\n".join(context_texts[:10])  # Use top 10 contexts
         
         if corrections_context:
             combined_contexts += f"\n\n--- USER CORRECTIONS ---\n\n{corrections_context}"
@@ -125,7 +125,7 @@ SQL Response:"""
                 accept='application/json',
                 body=json.dumps({
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 2000,
+                    "max_tokens": 4000,
                     "temperature": 0.2,
                     "messages": [
                         {
@@ -139,13 +139,13 @@ SQL Response:"""
             response_body = json.loads(response.get('body').read())
             result = response_body.get('content', [{}])[0].get('text', '')
 
-            return result.strip() if result.strip() else f"I found relevant documentation but couldn't generate a proper response. The retrieved information contains: {combined_contexts[:200]}..."
+            return result.strip() if result.strip() else f"I found relevant documentation but couldn't generate a proper response. The retrieved information contains: {combined_contexts[:1000]}..."
 
         except Exception as e:
             logger.error(f"Error generating answer from contexts: {e}")
             # Fallback to a simple response with the first context
             if context_texts:
-                return f"Based on the database documentation, here's what I found for your query '{query_text}':\n\n{context_texts[0][:500]}..."
+                return f"Based on the database documentation, here's what I found for your query '{query_text}':\n\n{context_texts[0][:2000]}..."
             else:
                 return f"I encountered an error while processing your query '{query_text}'. Please try again or rephrase your question."
 
@@ -192,7 +192,7 @@ SQL Response:"""
                     {
                         'content': item.get('content', {}).get('text', ''),
                         'source': item.get('location', {}).get('s3Location', {}).get('uri', ''),
-                        'content_sample': item.get('content', {}).get('text', '')[:200] + '...' if item.get('content', {}).get('text', '') else '',
+                        'content_sample': item.get('content', {}).get('text', '')[:500] + '...' if item.get('content', {}).get('text', '') else '',
                         'score': item.get('score', 0)
                     }
                     for item in response.get('retrievalResults', [])
@@ -259,7 +259,7 @@ SQL Response:"""
                     {
                         'content': item.get('content', {}).get('text', ''),
                         'source': item.get('location', {}).get('s3Location', {}).get('uri', ''),
-                        'content_sample': item.get('content', {}).get('text', '')[:200] + '...' if item.get('content', {}).get('text', '') else '',
+                        'content_sample': item.get('content', {}).get('text', '')[:500] + '...' if item.get('content', {}).get('text', '') else '',
                         'score': item.get('score', 0),
                         'from_query': expanded
                     }
@@ -321,7 +321,7 @@ Provide ONLY the query variations as plain text, one per line. No explanations o
                 accept='application/json',
                 body=json.dumps({
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 500,
+                    "max_tokens": 1500,
                     "temperature": 0.7,
                     "messages": [
                         {
@@ -382,7 +382,7 @@ Provide ONLY the query variations as plain text, one per line. No explanations o
                 {
                     'content': item.get('content', {}).get('text', ''),
                     'source': item.get('location', {}).get('s3Location', {}).get('uri', ''),
-                    'content_sample': item.get('content', {}).get('text', '')[:200] + '...' if item.get('content', {}).get('text', '') else '',
+                    'content_sample': item.get('content', {}).get('text', '')[:500] + '...' if item.get('content', {}).get('text', '') else '',
                     'score': item.get('score', 0)
                 }
                 for item in response.get('retrievalResults', [])
@@ -434,7 +434,7 @@ Respond with the hypothetical document only. Do not include any introductions or
                 accept='application/json',
                 body=json.dumps({
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 1000,
+                    "max_tokens": 4000,
                     "temperature": 0.2,
                     "messages": [
                         {
@@ -576,7 +576,7 @@ Respond with the hypothetical document only. Do not include any introductions or
                     {
                         'content': item.get('content', {}).get('text', ''),
                         'source': item.get('location', {}).get('s3Location', {}).get('uri', ''),
-                        'content_sample': item.get('content', {}).get('text', '')[:200] + '...' if item.get('content', {}).get('text', '') else '',
+                        'content_sample': item.get('content', {}).get('text', '')[:500] + '...' if item.get('content', {}).get('text', '') else '',
                         'score': item.get('score', 0),
                         'from_query': query
                     }
@@ -653,7 +653,7 @@ If the information is not available in the provided documentation, clearly indic
                 accept='application/json',
                 body=json.dumps({
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 2000,
+                    "max_tokens": 4000,
                     "temperature": 0.2,
                     "messages": [
                         {
@@ -717,7 +717,7 @@ If the information is not available in the provided documentation, clearly indic
                         {
                             'content': item.get('content', {}).get('text', ''),
                             'source': item.get('location', {}).get('s3Location', {}).get('uri', ''),
-                            'content_sample': item.get('content', {}).get('text', '')[:200] + '...' if item.get('content', {}).get('text', '') else '',
+                            'content_sample': item.get('content', {}).get('text', '')[:500] + '...' if item.get('content', {}).get('text', '') else '',
                             'score': item.get('score', 0)
                         }
                         for item in response.get('retrievalResults', [])
@@ -744,7 +744,7 @@ If the information is not available in the provided documentation, clearly indic
                 {
                     'content': item.get('content', {}).get('text', ''),
                     'source': item.get('location', {}).get('s3Location', {}).get('uri', ''),
-                    'content_sample': item.get('content', {}).get('text', '')[:200] + '...' if item.get('content', {}).get('text', '') else '',
+                    'content_sample': item.get('content', {}).get('text', '')[:500] + '...' if item.get('content', {}).get('text', '') else '',
                     'score': item.get('score', 0)
                 }
                 for item in response.get('retrievalResults', [])

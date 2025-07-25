@@ -607,7 +607,7 @@ async def multi_kb_query(request: QueryRequest):
                     secondary_info = "\n\n**Related Information:**\n"
                     for secondary in secondary_results:
                         source_name = secondary['source_type'].title()
-                        secondary_info += f"\n*From {source_name}:* {secondary['answer'][:200]}..."
+                        secondary_info += f"\n*From {source_name}:* {secondary['answer'][:1000]}..."
                     
                     primary_result['answer'] += secondary_info
             else:
