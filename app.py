@@ -839,6 +839,92 @@ async def process_training_pipeline(request: TrainingStatusRequest):
         logger.error(f"Error processing training pipeline: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/support/history")
+async def get_support_history(request: ChatSessionRequest):
+    """Get support history for a user"""
+    try:
+        user_id, company_id = ensure_user_and_company(request.userContext)
+        
+        if not user_id or not company_id:
+            raise HTTPException(status_code=400, detail="User context required")
+        
+        connection = get_chat_db_connection()
+        if not connection:
+            raise HTTPException(status_code=500, detail="Database unavailable")
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get recent support sessions
+        cursor.execute(
+            """SELECT cs.SessionUuid, cs.Title, cs.CreatedAt, cs.UpdatedAt,
+                      COUNT(cm.Id) as MessageCount
+               FROM chat_session cs
+               LEFT JOIN chat_message cm ON cs.Id = cm.SessionId
+               WHERE cs.UserId = %s AND cs.CompanyId = %s 
+               AND cs.KnowledgeBaseId = 'ECC3L7C2PG'
+               GROUP BY cs.Id
+               ORDER BY cs.UpdatedAt DESC
+               LIMIT 10""",
+            (user_id, company_id)
+        )
+        
+        sessions = cursor.fetchall()
+        
+        # Get recent support messages
+        cursor.execute(
+            """SELECT cm.Content, cm.MessageType, cm.CreatedAt, cm.QueryMode
+               FROM chat_message cm
+               JOIN chat_session cs ON cm.SessionId = cs.Id
+               WHERE cm.UserId = %s AND cm.CompanyId = %s 
+               AND cs.KnowledgeBaseId = 'ECC3L7C2PG'
+               AND cm.MessageType = 'user'
+               ORDER BY cm.CreatedAt DESC
+               LIMIT 20""",
+            (user_id, company_id)
+        )
+        
+        recent_queries = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        return {
+            "sessions": sessions,
+            "recent_queries": recent_queries,
+            "tickets": []  # Placeholder for Zendesk integration
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting support history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/support/escalate")
+async def escalate_to_human_support(request: dict):
+    """Escalate to human support (Zendesk integration placeholder)"""
+    try:
+        user_context = request.get('userContext')
+        escalation_type = request.get('escalationType', 'ticket')
+        message = request.get('message', '')
+        
+        if not user_context:
+            raise HTTPException(status_code=400, detail="User context required")
+        
+        
+        import time
+        ticket_id = f"TICKET-{int(time.time())}"
+        
+        return {
+            "status": "success",
+            "escalation_type": escalation_type,
+            "ticket_id": ticket_id,
+            "message": "Your request has been escalated to human support. You will receive a response within 24 hours.",
+            "zendesk_url": f"https://your-domain.zendesk.com/hc/requests/{ticket_id}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error escalating to human support: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/db-knowledge-assistant.js")
 async def serve_js():
     """Serve the JavaScript file directly"""
