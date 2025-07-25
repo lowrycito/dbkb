@@ -94,23 +94,21 @@ class AdvancedRetrieval:
         # Combine contexts for analysis
         combined_contexts = "\n\n---\n\n".join(context_texts[:5])  # Use top 5 contexts
 
-        prompt = f"""You are a SQL query assistant. Based on the retrieved database documentation below, provide ONLY SQL statements that answer the user's query.
+        prompt = f"""You are a SQL code generator. Generate ONLY executable SQL statements based on the database schema below.
 
 USER QUERY: {query_text}
 
-RETRIEVED DOCUMENTATION:
+DATABASE SCHEMA:
 {combined_contexts}
 
-IMPORTANT INSTRUCTIONS:
-1. Respond ONLY with SQL statements - no explanatory text
-2. Use proper SQL syntax for the database system
-3. Include table aliases for readability
-4. Add appropriate WHERE clauses for filtering
-5. Use meaningful column names in SELECT statements
-6. If multiple queries are needed, separate them with semicolons
-7. If the query cannot be answered with available schema information, respond with: "-- Insufficient schema information to generate SQL"
+CRITICAL RULES:
+- Output ONLY SQL code - no explanations, descriptions, or commentary
+- Do not include markdown formatting or code blocks
+- Use proper SQL syntax with appropriate WHERE clauses
+- If multiple queries needed, separate with semicolons
+- If insufficient information, output: -- Insufficient schema information
 
-SQL Response:"""
+SQL:"""
 
         try:
             response = self.bedrock_client.invoke_model(
