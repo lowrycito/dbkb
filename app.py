@@ -279,6 +279,33 @@ class ChatMessage(BaseModel):
     CreatedAt: str
     Metadata: Optional[Dict] = {}
 
+class FeedbackRequest(BaseModel):
+    messageId: int = Field(..., description="ID of the chat message being corrected")
+    sessionId: str = Field(..., description="Chat session ID")
+    feedbackType: str = Field(..., description="Type of feedback: correction, rating, improvement_suggestion")
+    rating: Optional[int] = Field(None, description="1-5 star rating for response quality")
+    originalQuery: str = Field(..., description="The user's original question")
+    originalResponse: str = Field(..., description="The assistant's response that was incorrect")
+    correctedResponse: Optional[str] = Field(None, description="User's corrected/improved response")
+    feedbackNotes: Optional[str] = Field(None, description="Additional user comments")
+    problemCategory: Optional[str] = Field(None, description="Category of problem: wrong_table, syntax_error, etc.")
+    userContext: UserContext
+
+class FeedbackResponse(BaseModel):
+    status: str
+    message: str
+    feedbackId: Optional[int] = None
+
+class TrainingStatusRequest(BaseModel):
+    knowledgeBaseId: str
+    userContext: UserContext
+
+class TrainingStatusResponse(BaseModel):
+    pendingFeedback: int
+    processedFeedback: int
+    lastTrainingUpdate: Optional[str]
+    improvementMetrics: Optional[Dict] = None
+
 # Helper functions that use the models (moved after model definitions)
 def get_application_kbs(application_name: str) -> Optional[ApplicationKBs]:
     """Get knowledge base IDs for an application"""
@@ -658,6 +685,159 @@ async def save_chat_message(request: ChatMessageRequest):
     except Exception as e:
         logger.error(f"Error saving chat message: {e}")
         return {"status": "success", "note": "message not persisted - error occurred"}
+
+@app.post("/feedback", response_model=FeedbackResponse)
+async def submit_feedback(request: FeedbackRequest):
+    """Submit feedback for an assistant response"""
+    try:
+        user_id, company_id = ensure_user_and_company(request.userContext)
+        
+        if not user_id or not company_id:
+            raise HTTPException(status_code=400, detail="User context required")
+        
+        connection = get_chat_db_connection()
+        if not connection:
+            raise HTTPException(status_code=500, detail="Database unavailable")
+        
+        cursor = connection.cursor()
+        
+        # Get session internal ID
+        cursor.execute(
+            "SELECT Id FROM chat_session WHERE SessionUuid = %s",
+            (request.sessionId,)
+        )
+        session_result = cursor.fetchone()
+        
+        if not session_result:
+            cursor.close()
+            connection.close()
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        session_id = session_result[0]
+        
+        cursor.execute(
+            "SELECT SourceKnowledgeBase FROM chat_message WHERE Id = %s",
+            (request.messageId,)
+        )
+        message_result = cursor.fetchone()
+        
+        if not message_result:
+            cursor.close()
+            connection.close()
+            raise HTTPException(status_code=404, detail="Message not found")
+        
+        kb_id = message_result[0] or request.userContext.application
+        
+        cursor.execute(
+            """INSERT INTO query_feedback 
+               (MessageId, UserId, CompanyId, SessionId, FeedbackType, Rating, 
+                OriginalQuery, OriginalResponse, CorrectedResponse, FeedbackNotes, 
+                ProblemCategory, KnowledgeBaseId) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (request.messageId, user_id, company_id, session_id, request.feedbackType,
+             request.rating, request.originalQuery, request.originalResponse,
+             request.correctedResponse, request.feedbackNotes, request.problemCategory, kb_id)
+        )
+        
+        feedback_id = cursor.lastrowid
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        if request.feedbackType == 'correction' and request.correctedResponse:
+            logger.info(f"Feedback {feedback_id} queued for training pipeline")
+        
+        return FeedbackResponse(
+            status="success", 
+            message="Feedback submitted successfully",
+            feedbackId=feedback_id
+        )
+        
+    except Exception as e:
+        logger.error(f"Error submitting feedback: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/feedback/training-status", response_model=TrainingStatusResponse)
+async def get_training_status(request: TrainingStatusRequest):
+    """Get training status for a knowledge base"""
+    try:
+        user_id, company_id = ensure_user_and_company(request.userContext)
+        
+        if not user_id or not company_id:
+            raise HTTPException(status_code=400, detail="User context required")
+        
+        connection = get_chat_db_connection()
+        if not connection:
+            raise HTTPException(status_code=500, detail="Database unavailable")
+        
+        cursor = connection.cursor()
+        
+        cursor.execute(
+            """SELECT COUNT(*) FROM query_feedback 
+               WHERE KnowledgeBaseId = %s AND CompanyId = %s AND ProcessingStatus = 'pending'""",
+            (request.knowledgeBaseId, company_id)
+        )
+        pending_count = cursor.fetchone()[0]
+        
+        cursor.execute(
+            """SELECT COUNT(*) FROM query_feedback 
+               WHERE KnowledgeBaseId = %s AND CompanyId = %s AND ProcessingStatus IN ('applied', 'reviewed')""",
+            (request.knowledgeBaseId, company_id)
+        )
+        processed_count = cursor.fetchone()[0]
+        
+        cursor.execute(
+            """SELECT CompletedAt FROM kb_improvement_log 
+               WHERE KnowledgeBaseId = %s AND CompanyId = %s AND Status = 'completed'
+               ORDER BY CompletedAt DESC LIMIT 1""",
+            (request.knowledgeBaseId, company_id)
+        )
+        last_update_result = cursor.fetchone()
+        last_update = last_update_result[0].isoformat() if last_update_result and last_update_result[0] else None
+        
+        cursor.close()
+        connection.close()
+        
+        return TrainingStatusResponse(
+            pendingFeedback=pending_count,
+            processedFeedback=processed_count,
+            lastTrainingUpdate=last_update
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting training status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/feedback/process-training")
+async def process_training_pipeline(request: TrainingStatusRequest):
+    """Trigger training pipeline to process pending feedback"""
+    try:
+        user_id, company_id = ensure_user_and_company(request.userContext)
+        
+        if not user_id or not company_id:
+            raise HTTPException(status_code=400, detail="User context required")
+        
+        connection = get_chat_db_connection()
+        if not connection:
+            raise HTTPException(status_code=500, detail="Database unavailable")
+        
+        from src.training.feedback_processor import FeedbackProcessor
+        
+        processor = FeedbackProcessor()
+        result = processor.process_pending_feedback(request.knowledgeBaseId, company_id, connection)
+        
+        connection.close()
+        
+        return {
+            "status": "success",
+            "message": f"Processed {result.get('processed', 0)} feedback items",
+            "details": result
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing training pipeline: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/db-knowledge-assistant.js")
 async def serve_js():

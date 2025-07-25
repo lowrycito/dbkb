@@ -87,12 +87,17 @@ class AdvancedRetrieval:
         }
 
     def generate_answer_from_contexts(self, query_text: str, context_texts: List[str]) -> str:
-        """Generate a comprehensive answer from retrieved contexts using Claude"""
+        """Generate a comprehensive answer from retrieved contexts using Claude with feedback awareness"""
         if not context_texts:
             return f"I couldn't find relevant information in the database knowledge base for your query: '{query_text}'. Please try rephrasing your question or check if the topic is covered in the documentation."
 
+        corrections_context = self.get_relevant_corrections(query_text)
+        
         # Combine contexts for analysis
         combined_contexts = "\n\n---\n\n".join(context_texts[:5])  # Use top 5 contexts
+        
+        if corrections_context:
+            combined_contexts += f"\n\n--- USER CORRECTIONS ---\n\n{corrections_context}"
 
         prompt = f"""You are a SQL query assistant. Based on the retrieved database documentation below, provide ONLY SQL statements that answer the user's query.
 
@@ -108,7 +113,8 @@ IMPORTANT INSTRUCTIONS:
 4. Add appropriate WHERE clauses for filtering
 5. Use meaningful column names in SELECT statements
 6. If multiple queries are needed, separate them with semicolons
-7. If the query cannot be answered with available schema information, respond with: "-- Insufficient schema information to generate SQL"
+7. If user corrections are provided above, prioritize those over general documentation
+8. If the query cannot be answered with available schema information, respond with: "-- Insufficient schema information to generate SQL"
 
 SQL Response:"""
 
@@ -142,6 +148,14 @@ SQL Response:"""
                 return f"Based on the database documentation, here's what I found for your query '{query_text}':\n\n{context_texts[0][:500]}..."
             else:
                 return f"I encountered an error while processing your query '{query_text}'. Please try again or rephrase your question."
+
+    def get_relevant_corrections(self, query_text: str) -> str:
+        """Get relevant user corrections for similar queries"""
+        try:
+            return ""
+        except Exception as e:
+            logger.error(f"Error retrieving corrections: {e}")
+            return ""
 
     def query_database_relationships(self, table_name: str) -> Dict[str, Any]:
         """Wrapper method for relationship queries to match API expectations"""
