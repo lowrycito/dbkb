@@ -59,13 +59,14 @@ class QueryMarkdownGenerator:
 
         # Count query patterns by category
         patterns_by_category = defaultdict(int)
-        for query_data in self.queries_data.values():
+        queries_list = self.queries_data if isinstance(self.queries_data, list) else self.queries_data.values()
+        for query_data in queries_list:
             category = query_data.get('category', 'Uncategorized')
             patterns_by_category[category] += 1
 
         # Count tables by usage frequency
         tables_usage = defaultdict(int)
-        for query_data in self.queries_data.values():
+        for query_data in queries_list:
             for table in query_data.get('tables_referenced', []):
                 tables_usage[table] += 1
 
@@ -96,9 +97,15 @@ class QueryMarkdownGenerator:
 
         # Group queries by category
         queries_by_category = defaultdict(list)
-        for query_id, query_data in self.queries_data.items():
-            category = query_data.get('category', 'Uncategorized')
-            queries_by_category[category].append((query_id, query_data))
+        if isinstance(self.queries_data, list):
+            for i, query_data in enumerate(self.queries_data):
+                category = query_data.get('category', 'Uncategorized')
+                query_id = query_data.get('id', f'query_{i}')
+                queries_by_category[category].append((query_id, query_data))
+        else:
+            for query_id, query_data in self.queries_data.items():
+                category = query_data.get('category', 'Uncategorized')
+                queries_by_category[category].append((query_id, query_data))
 
         # Generate a page for each category
         for category, queries in queries_by_category.items():
@@ -167,7 +174,8 @@ class QueryMarkdownGenerator:
 
         # Group queries by table usage
         queries_by_table = defaultdict(list)
-        for query_data in self.queries_data.values():
+        queries_list = self.queries_data if isinstance(self.queries_data, list) else self.queries_data.values()
+        for query_data in queries_list:
             for table in query_data.get('tables_referenced', []):
                 queries_by_table[table].append(query_data)
 
