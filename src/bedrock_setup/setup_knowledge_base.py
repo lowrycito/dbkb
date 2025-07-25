@@ -53,6 +53,18 @@ class BedrockKnowledgeBaseSetup:
                     "vectorKnowledgeBaseConfiguration": {
                         "embeddingModelArn": embedding_model_arn
                     }
+                },
+                storageConfiguration={
+                    "type": "OPENSEARCH_SERVERLESS",
+                    "opensearchServerlessConfiguration": {
+                        "collectionArn": f"arn:aws:aoss:{self.region}:836255806547:collection/{kb_name.lower().replace('-', '')[:32]}",
+                        "vectorIndexName": f"{kb_name.lower().replace('-', '_')}_index",
+                        "fieldMapping": {
+                            "vectorField": "vector",
+                            "textField": "text",
+                            "metadataField": "metadata"
+                        }
+                    }
                 }
             )
 
