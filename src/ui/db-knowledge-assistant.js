@@ -203,6 +203,126 @@ class DBKnowledgeAssistant extends HTMLElement {
           0%, 100% { opacity: 0.4; transform: scale(0.8); }
           50% { opacity: 1; transform: scale(1); }
         }
+
+        .support-actions {
+          padding: 10px;
+          border-top: 1px solid var(--border-color);
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+        }
+        
+        .support-btn {
+          padding: 8px 16px;
+          border: 1px solid var(--primary-color);
+          background: white;
+          color: var(--primary-color);
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        
+        .support-btn:hover {
+          background: var(--primary-color);
+          color: white;
+        }
+        
+        .support-history {
+          margin: 10px 0;
+          padding: 15px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border-left: 4px solid #007bff;
+        }
+        
+        .support-ticket {
+          padding: 10px;
+          margin: 5px 0;
+          background: white;
+          border-radius: 4px;
+          border: 1px solid #dee2e6;
+        }
+        
+        .ticket-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 5px;
+        }
+        
+        .ticket-id {
+          font-weight: bold;
+          color: #007bff;
+        }
+        
+        .ticket-status {
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          text-transform: uppercase;
+        }
+        
+        .ticket-status.open {
+          background: #fff3cd;
+          color: #856404;
+        }
+        
+        .ticket-status.closed {
+          background: #d4edda;
+          color: #155724;
+        }
+        
+        .escalation-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        
+        .escalation-content {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          max-width: 400px;
+          width: 90%;
+        }
+        
+        .escalation-options {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 15px;
+        }
+        
+        .btn-primary, .btn-secondary, .btn-tertiary {
+          padding: 10px 15px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        
+        .btn-primary {
+          background: #007bff;
+          color: white;
+        }
+        
+        .btn-secondary {
+          background: #6c757d;
+          color: white;
+        }
+        
+        .btn-tertiary {
+          background: #f8f9fa;
+          color: #6c757d;
+          border: 1px solid #dee2e6;
+        }
       </style>
 
       <div class="container">
@@ -214,6 +334,10 @@ class DBKnowledgeAssistant extends HTMLElement {
             rows="1"
           ></textarea>
           <button class="send-button" disabled>Send</button>
+        </div>
+        <div class="support-actions" id="supportActions" style="display: none;">
+          <button class="support-btn" id="viewHistoryBtn">📋 View Support History</button>
+          <button class="support-btn" id="escalateBtn">🆘 Escalate to Human</button>
         </div>
       </div>
     `;
@@ -249,6 +373,17 @@ class DBKnowledgeAssistant extends HTMLElement {
     sendButton.addEventListener('click', () => {
       this.sendMessage();
     });
+
+    const viewHistoryBtn = this.shadowRoot.querySelector('#viewHistoryBtn');
+    const escalateBtn = this.shadowRoot.querySelector('#escalateBtn');
+    
+    if (viewHistoryBtn) {
+      viewHistoryBtn.addEventListener('click', () => this.loadSupportHistory());
+    }
+    
+    if (escalateBtn) {
+      escalateBtn.addEventListener('click', () => this.showEscalationOptions());
+    }
 
     // Auto-scroll chat container on content change
     const observer = new MutationObserver(() => {
@@ -291,6 +426,15 @@ class DBKnowledgeAssistant extends HTMLElement {
   setQueryMode(mode) {
     this.queryMode = mode;
     console.log(`Query mode set to: ${mode}`);
+    
+    const supportActions = this.shadowRoot.querySelector('#supportActions');
+    if (supportActions) {
+      supportActions.style.display = (mode === 'support') ? 'flex' : 'none';
+    }
+    
+    if (mode === 'support') {
+      this.loadSupportHistory();
+    }
   }
 
   classifyQuery(queryText) {
@@ -392,6 +536,122 @@ class DBKnowledgeAssistant extends HTMLElement {
     messages.forEach(msg => {
       this.addMessage(msg.MessageType, msg.Content, false); // false = don't persist
     });
+  }
+
+  async loadSupportHistory() {
+    if (!this.userContext || !this.apiEndpoint) return;
+    
+    try {
+      const response = await fetch(`${this.apiEndpoint}/support/history`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userContext: this.userContext,
+          queryMode: 'support'
+        }),
+      });
+
+      if (response.ok) {
+        const historyData = await response.json();
+        this.displaySupportHistory(historyData);
+      }
+    } catch (error) {
+      console.error('Failed to load support history:', error);
+    }
+  }
+  
+  displaySupportHistory(historyData) {
+    const chatContainer = this.shadowRoot.querySelector('#chatContainer');
+    
+    if (historyData.sessions && historyData.sessions.length > 0) {
+      const historyDiv = document.createElement('div');
+      historyDiv.className = 'support-history';
+      historyDiv.innerHTML = `
+        <h3>Recent Support Sessions</h3>
+        ${historyData.sessions.map(session => `
+          <div class="support-ticket">
+            <div class="ticket-header">
+              <span class="ticket-id">${session.SessionUuid}</span>
+              <span class="ticket-status open">${session.MessageCount} messages</span>
+            </div>
+            <div class="ticket-subject">${session.Title || 'Support Session'}</div>
+            <div class="ticket-date">${new Date(session.CreatedAt).toLocaleDateString()}</div>
+          </div>
+        `).join('')}
+      `;
+      
+      chatContainer.insertBefore(historyDiv, chatContainer.firstChild);
+    }
+  }
+  
+  showEscalationOptions() {
+    const escalationHtml = `
+      <div id="escalation-modal" class="escalation-modal">
+        <div class="escalation-content">
+          <h3>Escalate to Human Support</h3>
+          <p>Need additional help? We can connect you with a human support representative.</p>
+          
+          <div class="escalation-options">
+            <button id="create-ticket" class="btn-primary">Create Support Ticket</button>
+            <button id="live-chat" class="btn-secondary">Start Live Chat</button>
+            <button id="cancel-escalation" class="btn-tertiary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', escalationHtml);
+    this.attachEscalationListeners();
+  }
+
+  attachEscalationListeners() {
+    const modal = document.getElementById('escalation-modal');
+    const createTicketBtn = document.getElementById('create-ticket');
+    const liveChatBtn = document.getElementById('live-chat');
+    const cancelBtn = document.getElementById('cancel-escalation');
+
+    createTicketBtn?.addEventListener('click', () => this.escalateToSupport('ticket'));
+    liveChatBtn?.addEventListener('click', () => this.escalateToSupport('chat'));
+    cancelBtn?.addEventListener('click', () => modal?.remove());
+  }
+
+  async escalateToSupport(escalationType) {
+    try {
+      const response = await fetch(`${this.apiEndpoint}/support/escalate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userContext: this.userContext,
+          escalationType: escalationType,
+          message: 'User requested escalation to human support'
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        this.displayEscalationResult(result);
+      }
+    } catch (error) {
+      console.error('Failed to escalate to support:', error);
+    }
+  }
+
+  displayEscalationResult(result) {
+    const modal = document.getElementById('escalation-modal');
+    if (modal) {
+      modal.innerHTML = `
+        <div class="escalation-content">
+          <h3>Support Request Created</h3>
+          <p>${result.message}</p>
+          <p><strong>Ticket ID:</strong> ${result.ticket_id}</p>
+          <button onclick="this.closest('.escalation-modal').remove()">Close</button>
+        </div>
+      `;
+    }
   }
   
   // Helper method to get the appropriate endpoint based on query type
