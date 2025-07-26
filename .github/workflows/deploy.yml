@@ -75,6 +75,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Set up QEMU for cross-platform builds
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: linux/arm64
+
     - name: Build and push Docker image
       run: |
         # Get AWS account ID first
@@ -83,7 +91,7 @@ jobs:
         # Login to ECR
         aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
         
-        # Build ARM64 image
+        # Build ARM64 image with proper buildx setup
         docker buildx build --platform linux/arm64 -t dbkb-api:arm64 .
         
         # Tag for ECR
